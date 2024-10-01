@@ -18,3 +18,7 @@
 ### 3. Create a source code tutorial for more people to join
 
 ### 4. Make the game engine just a game engine
+
+# 联系方式
+
+暂时只有QQ群：112652189
