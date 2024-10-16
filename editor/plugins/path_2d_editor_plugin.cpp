@@ -42,6 +42,7 @@
 
 void Path2DEditor::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			curve_edit->set_icon(get_editor_theme_icon(SNAME("CurveEdit")));
 			curve_edit_curve->set_icon(get_editor_theme_icon(SNAME("CurveCurve")));
@@ -49,8 +50,6 @@ void Path2DEditor::_notification(int p_what) {
 			curve_del->set_icon(get_editor_theme_icon(SNAME("CurveDelete")));
 			curve_close->set_icon(get_editor_theme_icon(SNAME("CurveClose")));
 			curve_clear_points->set_icon(get_editor_theme_icon(SNAME("Clear")));
-
-			create_curve_button->set_icon(get_editor_theme_icon(SNAME("Curve2D")));
 		} break;
 	}
 }
@@ -301,7 +300,7 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 			Vector2 gpoint = mm->get_position();
 
 			Ref<Curve2D> curve = node->get_curve();
-			if (curve.is_null()) {
+			if (curve == nullptr) {
 				return true;
 			}
 			if (curve->get_point_count() < 2) {
@@ -451,16 +450,6 @@ void Path2DEditor::_node_visibility_changed() {
 	}
 
 	canvas_item_editor->update_viewport();
-	_update_toolbar();
-}
-
-void Path2DEditor::_update_toolbar() {
-	if (!node) {
-		return;
-	}
-	bool has_curve = node->get_curve().is_valid();
-	toolbar->set_visible(has_curve);
-	create_curve_button->set_visible(!has_curve);
 }
 
 void Path2DEditor::edit(Node *p_path2d) {
@@ -474,7 +463,6 @@ void Path2DEditor::edit(Node *p_path2d) {
 
 	if (p_path2d) {
 		node = Object::cast_to<Path2D>(p_path2d);
-		_update_toolbar();
 
 		if (!node->is_connected(SceneStringName(visibility_changed), callable_mp(this, &Path2DEditor::_node_visibility_changed))) {
 			node->connect(SceneStringName(visibility_changed), callable_mp(this, &Path2DEditor::_node_visibility_changed));
@@ -486,12 +474,10 @@ void Path2DEditor::edit(Node *p_path2d) {
 		}
 		node = nullptr;
 	}
-
-	canvas_item_editor->update_viewport();
 }
 
 void Path2DEditor::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_update_toolbar"), &Path2DEditor::_update_toolbar);
+	//ClassDB::bind_method(D_METHOD("_menu_option"),&Path2DEditor::_menu_option);
 	ClassDB::bind_method(D_METHOD("_clear_curve_points"), &Path2DEditor::_clear_curve_points);
 	ClassDB::bind_method(D_METHOD("_restore_curve_points"), &Path2DEditor::_restore_curve_points);
 }
@@ -615,21 +601,6 @@ void Path2DEditor::_cancel_current_action() {
 	action = ACTION_NONE;
 }
 
-void Path2DEditor::_create_curve() {
-	ERR_FAIL_NULL(node);
-
-	Ref<Curve2D> new_curve;
-	new_curve.instantiate();
-
-	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(TTR("Create Curve in Path2D"));
-	undo_redo->add_do_property(node, "curve", new_curve);
-	undo_redo->add_undo_property(node, "curve", Ref<Curve2D>());
-	undo_redo->add_do_method(this, "_update_toolbar");
-	undo_redo->add_undo_method(this, "_update_toolbar");
-	undo_redo->commit_action();
-}
-
 void Path2DEditor::_confirm_clear_points() {
 	if (!node || node->get_curve().is_null()) {
 		return;
@@ -677,8 +648,6 @@ void Path2DEditor::_restore_curve_points(Path2D *p_path2d, const PackedVector2Ar
 }
 
 Path2DEditor::Path2DEditor() {
-	toolbar = memnew(HBoxContainer);
-
 	curve_edit = memnew(Button);
 	curve_edit->set_theme_type_variation("FlatButton");
 	curve_edit->set_toggle_mode(true);
@@ -686,7 +655,7 @@ Path2DEditor::Path2DEditor() {
 	curve_edit->set_focus_mode(Control::FOCUS_NONE);
 	curve_edit->set_tooltip_text(TTR("Select Points") + "\n" + TTR("Shift+Drag: Select Control Points") + "\n" + keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL) + TTR("Click: Add Point") + "\n" + TTR("Left Click: Split Segment (in curve)") + "\n" + TTR("Right Click: Delete Point"));
 	curve_edit->connect(SceneStringName(pressed), callable_mp(this, &Path2DEditor::_mode_selected).bind(MODE_EDIT));
-	toolbar->add_child(curve_edit);
+	add_child(curve_edit);
 
 	curve_edit_curve = memnew(Button);
 	curve_edit_curve->set_theme_type_variation("FlatButton");
@@ -694,7 +663,7 @@ Path2DEditor::Path2DEditor() {
 	curve_edit_curve->set_focus_mode(Control::FOCUS_NONE);
 	curve_edit_curve->set_tooltip_text(TTR("Select Control Points (Shift+Drag)"));
 	curve_edit_curve->connect(SceneStringName(pressed), callable_mp(this, &Path2DEditor::_mode_selected).bind(MODE_EDIT_CURVE));
-	toolbar->add_child(curve_edit_curve);
+	add_child(curve_edit_curve);
 
 	curve_create = memnew(Button);
 	curve_create->set_theme_type_variation("FlatButton");
@@ -702,7 +671,7 @@ Path2DEditor::Path2DEditor() {
 	curve_create->set_focus_mode(Control::FOCUS_NONE);
 	curve_create->set_tooltip_text(TTR("Add Point (in empty space)") + "\n" + TTR("Right Click: Delete Point"));
 	curve_create->connect(SceneStringName(pressed), callable_mp(this, &Path2DEditor::_mode_selected).bind(MODE_CREATE));
-	toolbar->add_child(curve_create);
+	add_child(curve_create);
 
 	curve_del = memnew(Button);
 	curve_del->set_theme_type_variation("FlatButton");
@@ -710,48 +679,42 @@ Path2DEditor::Path2DEditor() {
 	curve_del->set_focus_mode(Control::FOCUS_NONE);
 	curve_del->set_tooltip_text(TTR("Delete Point"));
 	curve_del->connect(SceneStringName(pressed), callable_mp(this, &Path2DEditor::_mode_selected).bind(MODE_DELETE));
-	toolbar->add_child(curve_del);
+	add_child(curve_del);
 
 	curve_close = memnew(Button);
 	curve_close->set_theme_type_variation("FlatButton");
 	curve_close->set_focus_mode(Control::FOCUS_NONE);
 	curve_close->set_tooltip_text(TTR("Close Curve"));
 	curve_close->connect(SceneStringName(pressed), callable_mp(this, &Path2DEditor::_mode_selected).bind(MODE_CLOSE));
-	toolbar->add_child(curve_close);
+	add_child(curve_close);
 
 	curve_clear_points = memnew(Button);
 	curve_clear_points->set_theme_type_variation("FlatButton");
 	curve_clear_points->set_focus_mode(Control::FOCUS_NONE);
 	curve_clear_points->set_tooltip_text(TTR("Clear Points"));
 	curve_clear_points->connect(SceneStringName(pressed), callable_mp(this, &Path2DEditor::_confirm_clear_points));
-	toolbar->add_child(curve_clear_points);
+	add_child(curve_clear_points);
 
 	clear_points_dialog = memnew(ConfirmationDialog);
 	clear_points_dialog->set_title(TTR("Please Confirm..."));
 	clear_points_dialog->set_text(TTR("Remove all curve points?"));
 	clear_points_dialog->connect(SceneStringName(confirmed), callable_mp(this, &Path2DEditor::_mode_selected).bind(MODE_CLEAR_POINTS));
-	toolbar->add_child(clear_points_dialog);
+	add_child(clear_points_dialog);
+
+	PopupMenu *menu;
 
 	handle_menu = memnew(MenuButton);
 	handle_menu->set_flat(false);
 	handle_menu->set_theme_type_variation("FlatMenuButton");
 	handle_menu->set_text(TTR("Options"));
-	toolbar->add_child(handle_menu);
+	add_child(handle_menu);
 
-	PopupMenu *menu = handle_menu->get_popup();
+	menu = handle_menu->get_popup();
 	menu->add_check_item(TTR("Mirror Handle Angles"));
 	menu->set_item_checked(HANDLE_OPTION_ANGLE, mirror_handle_angle);
 	menu->add_check_item(TTR("Mirror Handle Lengths"));
 	menu->set_item_checked(HANDLE_OPTION_LENGTH, mirror_handle_length);
 	menu->connect(SceneStringName(id_pressed), callable_mp(this, &Path2DEditor::_handle_option_pressed));
-
-	add_child(toolbar);
-
-	create_curve_button = memnew(Button);
-	create_curve_button->set_text(TTR("Create Curve"));
-	create_curve_button->hide();
-	add_child(create_curve_button);
-	create_curve_button->connect(SceneStringName(pressed), callable_mp(this, &Path2DEditor::_create_curve));
 }
 
 void Path2DEditorPlugin::edit(Object *p_object) {
@@ -765,6 +728,7 @@ bool Path2DEditorPlugin::handles(Object *p_object) const {
 void Path2DEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 		path2d_editor->show();
+
 	} else {
 		path2d_editor->hide();
 		path2d_editor->edit(nullptr);

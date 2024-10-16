@@ -37,7 +37,6 @@ import android.os.SystemClock
 import android.os.Trace
 import android.util.Log
 import org.godotengine.godot.BuildConfig
-import org.godotengine.godot.error.Error
 import org.godotengine.godot.io.file.FileAccessFlags
 import org.godotengine.godot.io.file.FileAccessHandler
 import org.json.JSONObject
@@ -129,8 +128,8 @@ fun dumpBenchmark(fileAccessHandler: FileAccessHandler? = null, filepath: String
 	Log.i(TAG, "BENCHMARK:\n$printOut")
 
 	if (fileAccessHandler != null && !filepath.isNullOrBlank()) {
-		val (fileError, fileId) = fileAccessHandler.fileOpen(filepath, FileAccessFlags.WRITE)
-		if (fileError == Error.OK) {
+		val fileId = fileAccessHandler.fileOpen(filepath, FileAccessFlags.WRITE)
+		if (fileId != FileAccessHandler.INVALID_FILE_ID) {
 			val jsonOutput = JSONObject(benchmarkTracker.toMap()).toString(4)
 			fileAccessHandler.fileWrite(fileId, ByteBuffer.wrap(jsonOutput.toByteArray()))
 			fileAccessHandler.fileClose(fileId)

@@ -193,6 +193,9 @@ void EditorPropertyRootMotion::_notification(int p_what) {
 	}
 }
 
+void EditorPropertyRootMotion::_bind_methods() {
+}
+
 EditorPropertyRootMotion::EditorPropertyRootMotion() {
 	HBoxContainer *hbc = memnew(HBoxContainer);
 	add_child(hbc);

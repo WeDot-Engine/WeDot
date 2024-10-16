@@ -352,7 +352,6 @@ void TextServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("font_has_char", "font_rid", "char"), &TextServer::font_has_char);
 	ClassDB::bind_method(D_METHOD("font_get_supported_chars", "font_rid"), &TextServer::font_get_supported_chars);
-	ClassDB::bind_method(D_METHOD("font_get_supported_glyphs", "font_rid"), &TextServer::font_get_supported_glyphs);
 
 	ClassDB::bind_method(D_METHOD("font_render_range", "font_rid", "size", "start", "end"), &TextServer::font_render_range);
 	ClassDB::bind_method(D_METHOD("font_render_glyph", "font_rid", "size", "index"), &TextServer::font_render_glyph);
@@ -1988,7 +1987,7 @@ TypedArray<Vector3i> TextServer::parse_structured_text(StructuredTextParser p_pa
 			}
 		} break;
 		case STRUCTURED_TEXT_LIST: {
-			if (p_args.size() == 1 && p_args[0].is_string()) {
+			if (p_args.size() == 1 && p_args[0].get_type() == Variant::STRING) {
 				Vector<String> tags = p_text.split(String(p_args[0]));
 				int prev = 0;
 				for (int i = 0; i < tags.size(); i++) {
@@ -2071,8 +2070,8 @@ TypedArray<Vector3i> TextServer::parse_structured_text(StructuredTextParser p_pa
 					if (prev != i) {
 						ret.push_back(Vector3i(prev, i, TextServer::DIRECTION_AUTO));
 					}
-					prev = p_text.length();
-					ret.push_back(Vector3i(i, p_text.length(), TextServer::DIRECTION_AUTO));
+					prev = i + 1;
+					ret.push_back(Vector3i(i, i + 1, TextServer::DIRECTION_LTR));
 					break;
 				}
 			}
@@ -2165,7 +2164,23 @@ TypedArray<Dictionary> TextServer::_shaped_text_get_ellipsis_glyphs_wrapper(cons
 }
 
 bool TextServer::is_valid_identifier(const String &p_string) const {
-	return p_string.is_valid_unicode_identifier();
+	const char32_t *str = p_string.ptr();
+	int len = p_string.length();
+
+	if (len == 0) {
+		return false; // Empty string.
+	}
+
+	if (!is_unicode_identifier_start(str[0])) {
+		return false;
+	}
+
+	for (int i = 1; i < len; i++) {
+		if (!is_unicode_identifier_continue(str[i])) {
+			return false;
+		}
+	}
+	return true;
 }
 
 bool TextServer::is_valid_letter(uint64_t p_unicode) const {

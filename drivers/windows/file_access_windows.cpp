@@ -73,18 +73,8 @@ bool FileAccessWindows::is_path_invalid(const String &p_path) {
 
 String FileAccessWindows::fix_path(const String &p_path) const {
 	String r_path = FileAccess::fix_path(p_path);
-
-	if (r_path.is_relative_path()) {
-		Char16String current_dir_name;
-		size_t str_len = GetCurrentDirectoryW(0, nullptr);
-		current_dir_name.resize(str_len + 1);
-		GetCurrentDirectoryW(current_dir_name.size(), (LPWSTR)current_dir_name.ptrw());
-		r_path = String::utf16((const char16_t *)current_dir_name.get_data()).trim_prefix(R"(\\?\)").replace("\\", "/").path_join(r_path);
-	}
-	r_path = r_path.simplify_path();
-	r_path = r_path.replace("/", "\\");
-	if (!r_path.is_network_share_path() && !r_path.begins_with(R"(\\?\)")) {
-		r_path = R"(\\?\)" + r_path;
+	if (r_path.is_absolute_path() && !r_path.is_network_share_path() && r_path.length() > MAX_PATH) {
+		r_path = "\\\\?\\" + r_path.replace("/", "\\");
 	}
 	return r_path;
 }
@@ -118,12 +108,14 @@ Error FileAccessWindows::open_internal(const String &p_path, int p_mode_flags) {
 		return ERR_INVALID_PARAMETER;
 	}
 
-	if (path.ends_with(":\\") || path.ends_with(":")) {
-		return ERR_FILE_CANT_OPEN;
-	}
-	DWORD file_attr = GetFileAttributesW((LPCWSTR)(path.utf16().get_data()));
-	if (file_attr != INVALID_FILE_ATTRIBUTES && (file_attr & FILE_ATTRIBUTE_DIRECTORY)) {
-		return ERR_FILE_CANT_OPEN;
+	/* Pretty much every implementation that uses fopen as primary
+	   backend supports utf8 encoding. */
+
+	struct _stat st;
+	if (_wstat((LPCWSTR)(path.utf16().get_data()), &st) == 0) {
+		if (!S_ISREG(st.st_mode)) {
+			return ERR_FILE_CANT_OPEN;
+		}
 	}
 
 #ifdef TOOLS_ENABLED
@@ -133,7 +125,7 @@ Error FileAccessWindows::open_internal(const String &p_path, int p_mode_flags) {
 	// platforms), we only check for relative paths, or paths in res:// or user://,
 	// other paths aren't likely to be portable anyway.
 	if (p_mode_flags == READ && (p_path.is_relative_path() || get_access_type() != ACCESS_FILESYSTEM)) {
-		String base_path = p_path;
+		String base_path = path;
 		String working_path;
 		String proper_path;
 
@@ -152,17 +144,23 @@ Error FileAccessWindows::open_internal(const String &p_path, int p_mode_flags) {
 			}
 			proper_path = "user://";
 		}
-		working_path = fix_path(working_path);
 
 		WIN32_FIND_DATAW d;
-		Vector<String> parts = base_path.simplify_path().split("/");
+		Vector<String> parts = base_path.split("/");
 
 		bool mismatch = false;
 
 		for (const String &part : parts) {
-			working_path = working_path + "\\" + part;
+			working_path = working_path.path_join(part);
+
+			// Skip if relative.
+			if (part == "." || part == "..") {
+				proper_path = proper_path.path_join(part);
+				continue;
+			}
 
 			HANDLE fnd = FindFirstFileW((LPCWSTR)(working_path.utf16().get_data()), &d);
+
 			if (fnd == INVALID_HANDLE_VALUE) {
 				mismatch = false;
 				break;
@@ -188,22 +186,12 @@ Error FileAccessWindows::open_internal(const String &p_path, int p_mode_flags) {
 	if (is_backup_save_enabled() && p_mode_flags == WRITE) {
 		save_path = path;
 		// Create a temporary file in the same directory as the target file.
-		// Note: do not use GetTempFileNameW, it's not long path aware!
-		String tmpfile;
-		uint64_t id = OS::get_singleton()->get_ticks_usec();
-		while (true) {
-			tmpfile = path + itos(id++) + ".tmp";
-			HANDLE handle = CreateFileW((LPCWSTR)tmpfile.utf16().get_data(), GENERIC_WRITE, 0, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, 0);
-			if (handle != INVALID_HANDLE_VALUE) {
-				CloseHandle(handle);
-				break;
-			}
-			if (GetLastError() != ERROR_FILE_EXISTS && GetLastError() != ERROR_SHARING_VIOLATION) {
-				last_error = ERR_FILE_CANT_WRITE;
-				return FAILED;
-			}
+		WCHAR tmpFileName[MAX_PATH];
+		if (GetTempFileNameW((LPCWSTR)(path.get_base_dir().utf16().get_data()), (LPCWSTR)(path.get_file().utf16().get_data()), 0, tmpFileName) == 0) {
+			last_error = ERR_FILE_CANT_OPEN;
+			return last_error;
 		}
-		path = tmpfile;
+		path = tmpFileName;
 	}
 
 	f = _wfsopen((LPCWSTR)(path.utf16().get_data()), mode_string, is_backup_save_enabled() ? _SH_SECURE : _SH_DENYNO);
@@ -247,7 +235,7 @@ void FileAccessWindows::_close() {
 			} else {
 				// Either the target exists and is locked (temporarily, hopefully)
 				// or it doesn't exist; let's assume the latter before re-trying.
-				rename_error = MoveFileW((LPCWSTR)(path_utf16.get_data()), (LPCWSTR)(save_path_utf16.get_data())) == 0;
+				rename_error = _wrename((LPCWSTR)(path_utf16.get_data()), (LPCWSTR)(save_path_utf16.get_data())) != 0;
 			}
 
 			if (!rename_error) {
@@ -274,7 +262,7 @@ String FileAccessWindows::get_path() const {
 }
 
 String FileAccessWindows::get_path_absolute() const {
-	return path.trim_prefix(R"(\\?\)").replace("\\", "/");
+	return path;
 }
 
 bool FileAccessWindows::is_open() const {
@@ -324,9 +312,26 @@ bool FileAccessWindows::eof_reached() const {
 	return last_error == ERR_FILE_EOF;
 }
 
-uint64_t FileAccessWindows::get_buffer(uint8_t *p_dst, uint64_t p_length) const {
-	ERR_FAIL_NULL_V(f, -1);
-	ERR_FAIL_COND_V(!p_dst && p_length > 0, -1);
+uint8_t FileAccessWindows::get_8() const {
+	ERR_FAIL_NULL_V(f, 0);
+
+	if (flags == READ_WRITE || flags == WRITE_READ) {
+		if (prev_op == WRITE) {
+			fflush(f);
+		}
+		prev_op = READ;
+	}
+	uint8_t b;
+	if (fread(&b, 1, 1, f) == 0) {
+		check_errors();
+		b = '\0';
+	}
+
+	return b;
+}
+
+uint16_t FileAccessWindows::get_16() const {
+	ERR_FAIL_NULL_V(f, 0);
 
 	if (flags == READ_WRITE || flags == WRITE_READ) {
 		if (prev_op == WRITE) {
@@ -335,9 +340,74 @@ uint64_t FileAccessWindows::get_buffer(uint8_t *p_dst, uint64_t p_length) const 
 		prev_op = READ;
 	}
 
+	uint16_t b = 0;
+	if (fread(&b, 1, 2, f) != 2) {
+		check_errors();
+	}
+
+	if (big_endian) {
+		b = BSWAP16(b);
+	}
+
+	return b;
+}
+
+uint32_t FileAccessWindows::get_32() const {
+	ERR_FAIL_NULL_V(f, 0);
+
+	if (flags == READ_WRITE || flags == WRITE_READ) {
+		if (prev_op == WRITE) {
+			fflush(f);
+		}
+		prev_op = READ;
+	}
+
+	uint32_t b = 0;
+	if (fread(&b, 1, 4, f) != 4) {
+		check_errors();
+	}
+
+	if (big_endian) {
+		b = BSWAP32(b);
+	}
+
+	return b;
+}
+
+uint64_t FileAccessWindows::get_64() const {
+	ERR_FAIL_NULL_V(f, 0);
+
+	if (flags == READ_WRITE || flags == WRITE_READ) {
+		if (prev_op == WRITE) {
+			fflush(f);
+		}
+		prev_op = READ;
+	}
+
+	uint64_t b = 0;
+	if (fread(&b, 1, 8, f) != 8) {
+		check_errors();
+	}
+
+	if (big_endian) {
+		b = BSWAP64(b);
+	}
+
+	return b;
+}
+
+uint64_t FileAccessWindows::get_buffer(uint8_t *p_dst, uint64_t p_length) const {
+	ERR_FAIL_COND_V(!p_dst && p_length > 0, -1);
+	ERR_FAIL_NULL_V(f, -1);
+
+	if (flags == READ_WRITE || flags == WRITE_READ) {
+		if (prev_op == WRITE) {
+			fflush(f);
+		}
+		prev_op = READ;
+	}
 	uint64_t read = fread(p_dst, 1, p_length, f);
 	check_errors();
-
 	return read;
 }
 
@@ -372,6 +442,77 @@ void FileAccessWindows::flush() {
 	}
 }
 
+void FileAccessWindows::store_8(uint8_t p_dest) {
+	ERR_FAIL_NULL(f);
+
+	if (flags == READ_WRITE || flags == WRITE_READ) {
+		if (prev_op == READ) {
+			if (last_error != ERR_FILE_EOF) {
+				fseek(f, 0, SEEK_CUR);
+			}
+		}
+		prev_op = WRITE;
+	}
+	fwrite(&p_dest, 1, 1, f);
+}
+
+void FileAccessWindows::store_16(uint16_t p_dest) {
+	ERR_FAIL_NULL(f);
+
+	if (flags == READ_WRITE || flags == WRITE_READ) {
+		if (prev_op == READ) {
+			if (last_error != ERR_FILE_EOF) {
+				fseek(f, 0, SEEK_CUR);
+			}
+		}
+		prev_op = WRITE;
+	}
+
+	if (big_endian) {
+		p_dest = BSWAP16(p_dest);
+	}
+
+	fwrite(&p_dest, 1, 2, f);
+}
+
+void FileAccessWindows::store_32(uint32_t p_dest) {
+	ERR_FAIL_NULL(f);
+
+	if (flags == READ_WRITE || flags == WRITE_READ) {
+		if (prev_op == READ) {
+			if (last_error != ERR_FILE_EOF) {
+				fseek(f, 0, SEEK_CUR);
+			}
+		}
+		prev_op = WRITE;
+	}
+
+	if (big_endian) {
+		p_dest = BSWAP32(p_dest);
+	}
+
+	fwrite(&p_dest, 1, 4, f);
+}
+
+void FileAccessWindows::store_64(uint64_t p_dest) {
+	ERR_FAIL_NULL(f);
+
+	if (flags == READ_WRITE || flags == WRITE_READ) {
+		if (prev_op == READ) {
+			if (last_error != ERR_FILE_EOF) {
+				fseek(f, 0, SEEK_CUR);
+			}
+		}
+		prev_op = WRITE;
+	}
+
+	if (big_endian) {
+		p_dest = BSWAP64(p_dest);
+	}
+
+	fwrite(&p_dest, 1, 8, f);
+}
+
 void FileAccessWindows::store_buffer(const uint8_t *p_src, uint64_t p_length) {
 	ERR_FAIL_NULL(f);
 	ERR_FAIL_COND(!p_src && p_length > 0);
@@ -384,7 +525,6 @@ void FileAccessWindows::store_buffer(const uint8_t *p_src, uint64_t p_length) {
 		}
 		prev_op = WRITE;
 	}
-
 	ERR_FAIL_COND(fwrite(p_src, 1, p_length, f) != (size_t)p_length);
 }
 
@@ -409,7 +549,7 @@ uint64_t FileAccessWindows::_get_modified_time(const String &p_file) {
 	}
 
 	String file = fix_path(p_file);
-	if (file.ends_with("\\") && file != "\\") {
+	if (file.ends_with("/") && file != "/") {
 		file = file.substr(0, file.length() - 1);
 	}
 
@@ -445,6 +585,7 @@ uint64_t FileAccessWindows::_get_modified_time(const String &p_file) {
 		}
 	}
 
+	print_verbose("Failed to get modified time for: " + p_file);
 	return 0;
 }
 
@@ -466,15 +607,14 @@ bool FileAccessWindows::_get_hidden_attribute(const String &p_file) {
 
 Error FileAccessWindows::_set_hidden_attribute(const String &p_file, bool p_hidden) {
 	String file = fix_path(p_file);
-	const Char16String &file_utf16 = file.utf16();
 
-	DWORD attrib = GetFileAttributesW((LPCWSTR)file_utf16.get_data());
+	DWORD attrib = GetFileAttributesW((LPCWSTR)file.utf16().get_data());
 	ERR_FAIL_COND_V_MSG(attrib == INVALID_FILE_ATTRIBUTES, FAILED, "Failed to get attributes for: " + p_file);
 	BOOL ok;
 	if (p_hidden) {
-		ok = SetFileAttributesW((LPCWSTR)file_utf16.get_data(), attrib | FILE_ATTRIBUTE_HIDDEN);
+		ok = SetFileAttributesW((LPCWSTR)file.utf16().get_data(), attrib | FILE_ATTRIBUTE_HIDDEN);
 	} else {
-		ok = SetFileAttributesW((LPCWSTR)file_utf16.get_data(), attrib & ~FILE_ATTRIBUTE_HIDDEN);
+		ok = SetFileAttributesW((LPCWSTR)file.utf16().get_data(), attrib & ~FILE_ATTRIBUTE_HIDDEN);
 	}
 	ERR_FAIL_COND_V_MSG(!ok, FAILED, "Failed to set attributes for: " + p_file);
 
@@ -491,15 +631,14 @@ bool FileAccessWindows::_get_read_only_attribute(const String &p_file) {
 
 Error FileAccessWindows::_set_read_only_attribute(const String &p_file, bool p_ro) {
 	String file = fix_path(p_file);
-	const Char16String &file_utf16 = file.utf16();
 
-	DWORD attrib = GetFileAttributesW((LPCWSTR)file_utf16.get_data());
+	DWORD attrib = GetFileAttributesW((LPCWSTR)file.utf16().get_data());
 	ERR_FAIL_COND_V_MSG(attrib == INVALID_FILE_ATTRIBUTES, FAILED, "Failed to get attributes for: " + p_file);
 	BOOL ok;
 	if (p_ro) {
-		ok = SetFileAttributesW((LPCWSTR)file_utf16.get_data(), attrib | FILE_ATTRIBUTE_READONLY);
+		ok = SetFileAttributesW((LPCWSTR)file.utf16().get_data(), attrib | FILE_ATTRIBUTE_READONLY);
 	} else {
-		ok = SetFileAttributesW((LPCWSTR)file_utf16.get_data(), attrib & ~FILE_ATTRIBUTE_READONLY);
+		ok = SetFileAttributesW((LPCWSTR)file.utf16().get_data(), attrib & ~FILE_ATTRIBUTE_READONLY);
 	}
 	ERR_FAIL_COND_V_MSG(!ok, FAILED, "Failed to set attributes for: " + p_file);
 

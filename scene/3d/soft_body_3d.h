@@ -126,11 +126,6 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
-#ifndef DISABLE_DEPRECATED
-	void _pin_point_bind_compat_94684(int p_point_index, bool pin, const NodePath &p_spatial_attachment_path = NodePath());
-	static void _bind_compatibility_methods();
-#endif
-
 	PackedStringArray get_configuration_warnings() const override;
 
 public:
@@ -182,7 +177,7 @@ public:
 	Vector3 get_point_transform(int p_point_index);
 
 	void pin_point_toggle(int p_point_index);
-	void pin_point(int p_point_index, bool pin, const NodePath &p_spatial_attachment_path = NodePath(), int p_insert_at = -1);
+	void pin_point(int p_point_index, bool pin, const NodePath &p_spatial_attachment_path = NodePath());
 	bool is_point_pinned(int p_point_index) const;
 
 	void _pin_point_deferred(int p_point_index, bool pin, const NodePath p_spatial_attachment_path);
@@ -198,7 +193,7 @@ private:
 	void _update_cache_pin_points_datas();
 
 	void _pin_point_on_physics_server(int p_point_index, bool pin);
-	void _add_pinned_point(int p_point_index, const NodePath &p_spatial_attachment_path, int p_insert_at = -1);
+	void _add_pinned_point(int p_point_index, const NodePath &p_spatial_attachment_path);
 	void _reset_points_offsets();
 
 	void _remove_pinned_point(int p_point_index);

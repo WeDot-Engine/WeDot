@@ -2170,32 +2170,17 @@ void RenderingDeviceDriverD3D12::command_pipeline_barrier(CommandBufferID p_cmd_
 	}
 
 	// Define the barrier groups and execute.
-
 	D3D12_BARRIER_GROUP barrier_groups[3] = {};
-	uint32_t barrier_groups_count = 0;
-
-	if (!global_barriers.is_empty()) {
-		D3D12_BARRIER_GROUP &barrier_group = barrier_groups[barrier_groups_count++];
-		barrier_group.Type = D3D12_BARRIER_TYPE_GLOBAL;
-		barrier_group.NumBarriers = global_barriers.size();
-		barrier_group.pGlobalBarriers = global_barriers.ptr();
-	}
-
-	if (!buffer_barriers.is_empty()) {
-		D3D12_BARRIER_GROUP &barrier_group = barrier_groups[barrier_groups_count++];
-		barrier_group.Type = D3D12_BARRIER_TYPE_BUFFER;
-		barrier_group.NumBarriers = buffer_barriers.size();
-		barrier_group.pBufferBarriers = buffer_barriers.ptr();
-	}
-
-	if (!texture_barriers.is_empty()) {
-		D3D12_BARRIER_GROUP &barrier_group = barrier_groups[barrier_groups_count++];
-		barrier_group.Type = D3D12_BARRIER_TYPE_TEXTURE;
-		barrier_group.NumBarriers = texture_barriers.size();
-		barrier_group.pTextureBarriers = texture_barriers.ptr();
-	}
-
-	cmd_list_7->Barrier(barrier_groups_count, barrier_groups);
+	barrier_groups[0].Type = D3D12_BARRIER_TYPE_GLOBAL;
+	barrier_groups[1].Type = D3D12_BARRIER_TYPE_BUFFER;
+	barrier_groups[2].Type = D3D12_BARRIER_TYPE_TEXTURE;
+	barrier_groups[0].NumBarriers = global_barriers.size();
+	barrier_groups[1].NumBarriers = buffer_barriers.size();
+	barrier_groups[2].NumBarriers = texture_barriers.size();
+	barrier_groups[0].pGlobalBarriers = global_barriers.ptr();
+	barrier_groups[1].pBufferBarriers = buffer_barriers.ptr();
+	barrier_groups[2].pTextureBarriers = texture_barriers.ptr();
+	cmd_list_7->Barrier(ARRAY_SIZE(barrier_groups), barrier_groups);
 }
 
 /****************/
@@ -3244,7 +3229,7 @@ Vector<uint8_t> RenderingDeviceDriverD3D12::shader_compile_binary_from_spirv(Vec
 							DEV_ASSERT(binding_info.res_class == (uint32_t)RES_CLASS_INVALID || binding_info.res_class == (uint32_t)res_class);
 							binding_info.res_class = res_class;
 						} else if (p_dxil_type == DXIL_RES_SAMPLER) {
-							binding_info.has_sampler = (uint32_t)true;
+							binding_info.has_sampler = (uint32_t) true;
 						} else {
 							CRASH_NOW();
 						}
@@ -3813,11 +3798,6 @@ uint32_t RenderingDeviceDriverD3D12::shader_get_layout_hash(ShaderID p_shader) {
 void RenderingDeviceDriverD3D12::shader_free(ShaderID p_shader) {
 	ShaderInfo *shader_info_in = (ShaderInfo *)p_shader.id;
 	VersatileResource::free(resources_allocator, shader_info_in);
-}
-
-void RenderingDeviceDriverD3D12::shader_destroy_modules(ShaderID p_shader) {
-	ShaderInfo *shader_info_in = (ShaderInfo *)p_shader.id;
-	shader_info_in->stages_bytecode.clear();
 }
 
 /*********************/
@@ -6039,10 +6019,6 @@ void RenderingDeviceDriverD3D12::command_end_label(CommandBufferID p_cmd_buffer)
 	const CommandBufferInfo *cmd_buf_info = (const CommandBufferInfo *)p_cmd_buffer.id;
 	PIXEndEvent(cmd_buf_info->cmd_list.Get());
 #endif
-}
-
-void RenderingDeviceDriverD3D12::command_insert_breadcrumb(CommandBufferID p_cmd_buffer, uint32_t p_data) {
-	// TODO: Implement via DRED.
 }
 
 /********************/

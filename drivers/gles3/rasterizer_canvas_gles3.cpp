@@ -1734,7 +1734,7 @@ void RasterizerCanvasGLES3::light_update_directional_shadow(RID p_rid, int p_sha
 
 	Vector2 center = p_clip_rect.get_center();
 
-	float to_edge_distance = ABS(light_dir.dot(p_clip_rect.get_support(-light_dir)) - light_dir.dot(center));
+	float to_edge_distance = ABS(light_dir.dot(p_clip_rect.get_support(light_dir)) - light_dir.dot(center));
 
 	Vector2 from_pos = center - light_dir * (to_edge_distance + p_cull_distance);
 	float distance = to_edge_distance * 2.0 + p_cull_distance;
@@ -2184,9 +2184,7 @@ void RasterizerCanvasGLES3::canvas_begin(RID p_to_render_target, bool p_to_backb
 		glBindFramebuffer(GL_FRAMEBUFFER, render_target->fbo);
 		glActiveTexture(GL_TEXTURE0 + config->max_texture_image_units - 4);
 		glBindTexture(GL_TEXTURE_2D, render_target->backbuffer);
-		if (render_target->backbuffer != 0) {
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, p_backbuffer_has_mipmaps ? render_target->mipmap_count - 1 : 0);
-		}
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, p_backbuffer_has_mipmaps ? render_target->mipmap_count - 1 : 0);
 	}
 
 	if (render_target->is_transparent || p_to_backbuffer) {

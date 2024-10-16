@@ -31,6 +31,7 @@
 #ifndef EDITOR_LOCALE_DIALOG_H
 #define EDITOR_LOCALE_DIALOG_H
 
+#include "core/string/translation.h"
 #include "scene/gui/dialogs.h"
 
 class Button;

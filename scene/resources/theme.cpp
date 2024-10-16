@@ -1250,12 +1250,14 @@ void Theme::get_type_list(List<StringName> *p_list) const {
 	}
 }
 
-void Theme::get_type_dependencies(const StringName &p_base_type, const StringName &p_type_variation, Vector<StringName> &r_result) {
+void Theme::get_type_dependencies(const StringName &p_base_type, const StringName &p_type_variation, List<StringName> *p_list) {
+	ERR_FAIL_NULL(p_list);
+
 	// Build the dependency chain for type variations.
 	if (p_type_variation != StringName()) {
 		StringName variation_name = p_type_variation;
 		while (variation_name != StringName()) {
-			r_result.push_back(variation_name);
+			p_list->push_back(variation_name);
 			variation_name = get_type_variation_base(variation_name);
 
 			// If we have reached the base type dependency, it's safe to stop (assuming no funny business was done to the Theme).
@@ -1266,7 +1268,7 @@ void Theme::get_type_dependencies(const StringName &p_base_type, const StringNam
 	}
 
 	// Continue building the chain using native class hierarchy.
-	ThemeDB::get_singleton()->get_native_type_dependencies(p_base_type, r_result);
+	ThemeDB::get_singleton()->get_native_type_dependencies(p_base_type, p_list);
 }
 
 // Internal methods for getting lists as a Vector of String (compatible with public API).

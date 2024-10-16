@@ -324,43 +324,22 @@ Vector2 PrimitiveMesh::get_uv2_scale(Vector2 p_margin_scale) const {
 }
 
 float PrimitiveMesh::get_lightmap_texel_size() const {
-	return texel_size;
-}
+	float texel_size = GLOBAL_GET("rendering/lightmapping/primitive_meshes/texel_size");
 
-void PrimitiveMesh::_on_settings_changed() {
-	float new_texel_size = float(GLOBAL_GET("rendering/lightmapping/primitive_meshes/texel_size"));
-	if (new_texel_size <= 0.0) {
-		new_texel_size = 0.2;
-	}
-	if (texel_size == new_texel_size) {
-		return;
-	}
-
-	texel_size = new_texel_size;
-	_update_lightmap_size();
-	request_update();
-}
-
-PrimitiveMesh::PrimitiveMesh() {
-	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	mesh = RenderingServer::get_singleton()->mesh_create();
-
-	ERR_FAIL_NULL(ProjectSettings::get_singleton());
-	texel_size = float(GLOBAL_GET("rendering/lightmapping/primitive_meshes/texel_size"));
 	if (texel_size <= 0.0) {
 		texel_size = 0.2;
 	}
-	ProjectSettings *project_settings = ProjectSettings::get_singleton();
-	project_settings->connect("settings_changed", callable_mp(this, &PrimitiveMesh::_on_settings_changed));
+
+	return texel_size;
+}
+
+PrimitiveMesh::PrimitiveMesh() {
+	mesh = RenderingServer::get_singleton()->mesh_create();
 }
 
 PrimitiveMesh::~PrimitiveMesh() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	RenderingServer::get_singleton()->free(mesh);
-
-	ERR_FAIL_NULL(ProjectSettings::get_singleton());
-	ProjectSettings *project_settings = ProjectSettings::get_singleton();
-	project_settings->disconnect("settings_changed", callable_mp(this, &PrimitiveMesh::_on_settings_changed));
 }
 
 /**
@@ -371,6 +350,7 @@ void CapsuleMesh::_update_lightmap_size() {
 	if (get_add_uv2()) {
 		// size must have changed, update lightmap size hint
 		Size2i _lightmap_size_hint;
+		float texel_size = get_lightmap_texel_size();
 		float padding = get_uv2_padding();
 
 		float radial_length = radius * Math_PI * 0.5; // circumference of 90 degree bend
@@ -385,6 +365,7 @@ void CapsuleMesh::_update_lightmap_size() {
 
 void CapsuleMesh::_create_mesh_array(Array &p_arr) const {
 	bool _add_uv2 = get_add_uv2();
+	float texel_size = get_lightmap_texel_size();
 	float _uv2_padding = get_uv2_padding() * texel_size;
 
 	create_mesh_array(p_arr, radius, height, radial_segments, rings, _add_uv2, _uv2_padding);
@@ -632,6 +613,7 @@ void BoxMesh::_update_lightmap_size() {
 	if (get_add_uv2()) {
 		// size must have changed, update lightmap size hint
 		Size2i _lightmap_size_hint;
+		float texel_size = get_lightmap_texel_size();
 		float padding = get_uv2_padding();
 
 		float width = (size.x + size.z) / texel_size;
@@ -650,6 +632,7 @@ void BoxMesh::_create_mesh_array(Array &p_arr) const {
 	// With 3 faces along the width and 2 along the height of the texture we need to adjust our scale
 	// accordingly.
 	bool _add_uv2 = get_add_uv2();
+	float texel_size = get_lightmap_texel_size();
 	float _uv2_padding = get_uv2_padding() * texel_size;
 
 	BoxMesh::create_mesh_array(p_arr, size, subdivide_w, subdivide_h, subdivide_d, _add_uv2, _uv2_padding);
@@ -954,6 +937,7 @@ void CylinderMesh::_update_lightmap_size() {
 	if (get_add_uv2()) {
 		// size must have changed, update lightmap size hint
 		Size2i _lightmap_size_hint;
+		float texel_size = get_lightmap_texel_size();
 		float padding = get_uv2_padding();
 
 		float top_circumference = top_radius * Math_PI * 2.0;
@@ -973,6 +957,7 @@ void CylinderMesh::_update_lightmap_size() {
 
 void CylinderMesh::_create_mesh_array(Array &p_arr) const {
 	bool _add_uv2 = get_add_uv2();
+	float texel_size = get_lightmap_texel_size();
 	float _uv2_padding = get_uv2_padding() * texel_size;
 
 	create_mesh_array(p_arr, top_radius, bottom_radius, height, radial_segments, rings, cap_top, cap_bottom, _add_uv2, _uv2_padding);
@@ -1259,6 +1244,7 @@ void PlaneMesh::_update_lightmap_size() {
 	if (get_add_uv2()) {
 		// size must have changed, update lightmap size hint
 		Size2i _lightmap_size_hint;
+		float texel_size = get_lightmap_texel_size();
 		float padding = get_uv2_padding();
 
 		_lightmap_size_hint.x = MAX(1.0, (size.x / texel_size) + padding);
@@ -1430,6 +1416,7 @@ void PrismMesh::_update_lightmap_size() {
 	if (get_add_uv2()) {
 		// size must have changed, update lightmap size hint
 		Size2i _lightmap_size_hint;
+		float texel_size = get_lightmap_texel_size();
 		float padding = get_uv2_padding();
 
 		// left_to_right does not effect the surface area of the prism so we ignore that.
@@ -1453,6 +1440,7 @@ void PrismMesh::_create_mesh_array(Array &p_arr) const {
 
 	// Only used if we calculate UV2
 	bool _add_uv2 = get_add_uv2();
+	float texel_size = get_lightmap_texel_size();
 	float _uv2_padding = get_uv2_padding() * texel_size;
 
 	float horizontal_total = size.x + size.z + 2.0 * _uv2_padding;
@@ -1774,6 +1762,7 @@ void SphereMesh::_update_lightmap_size() {
 	if (get_add_uv2()) {
 		// size must have changed, update lightmap size hint
 		Size2i _lightmap_size_hint;
+		float texel_size = get_lightmap_texel_size();
 		float padding = get_uv2_padding();
 
 		float _width = radius * Math_TAU;
@@ -1787,6 +1776,7 @@ void SphereMesh::_update_lightmap_size() {
 
 void SphereMesh::_create_mesh_array(Array &p_arr) const {
 	bool _add_uv2 = get_add_uv2();
+	float texel_size = get_lightmap_texel_size();
 	float _uv2_padding = get_uv2_padding() * texel_size;
 
 	create_mesh_array(p_arr, radius, height, radial_segments, rings, is_hemisphere, _add_uv2, _uv2_padding);
@@ -1960,6 +1950,7 @@ void TorusMesh::_update_lightmap_size() {
 	if (get_add_uv2()) {
 		// size must have changed, update lightmap size hint
 		Size2i _lightmap_size_hint;
+		float texel_size = get_lightmap_texel_size();
 		float padding = get_uv2_padding();
 
 		float min_radius = inner_radius;
@@ -2009,6 +2000,7 @@ void TorusMesh::_create_mesh_array(Array &p_arr) const {
 
 	// Only used if we calculate UV2
 	bool _add_uv2 = get_add_uv2();
+	float texel_size = get_lightmap_texel_size();
 	float _uv2_padding = get_uv2_padding() * texel_size;
 
 	float horizontal_total = max_radius * Math_TAU + _uv2_padding;
@@ -3476,13 +3468,13 @@ Ref<Font> TextMesh::_get_font_or_default() const {
 	}
 
 	StringName theme_name = "font";
-	Vector<StringName> theme_types;
-	ThemeDB::get_singleton()->get_native_type_dependencies(get_class_name(), theme_types);
+	List<StringName> theme_types;
+	ThemeDB::get_singleton()->get_native_type_dependencies(get_class_name(), &theme_types);
 
 	ThemeContext *global_context = ThemeDB::get_singleton()->get_default_theme_context();
-	Vector<Ref<Theme>> themes = global_context->get_themes();
+	List<Ref<Theme>> themes = global_context->get_themes();
 	if (Engine::get_singleton()->is_editor_hint()) {
-		themes.insert(0, ThemeDB::get_singleton()->get_project_theme());
+		themes.push_front(ThemeDB::get_singleton()->get_project_theme());
 	}
 
 	for (const Ref<Theme> &theme : themes) {

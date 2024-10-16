@@ -47,7 +47,7 @@ namespace Godot
         {
             get
             {
-                real_t detSign = Mathf.Sign(Determinant());
+                real_t detSign = Mathf.Sign(BasisDeterminant());
                 return new Vector2(X.Length(), detSign * Y.Length());
             }
         }
@@ -59,7 +59,7 @@ namespace Godot
         {
             get
             {
-                real_t detSign = Mathf.Sign(Determinant());
+                real_t detSign = Mathf.Sign(BasisDeterminant());
                 return Mathf.Acos(X.Normalized().Dot(detSign * Y.Normalized())) - Mathf.Pi * 0.5f;
             }
         }
@@ -135,7 +135,7 @@ namespace Godot
         /// <returns>The inverse transformation matrix.</returns>
         public readonly Transform2D AffineInverse()
         {
-            real_t det = Determinant();
+            real_t det = BasisDeterminant();
 
             if (det == 0)
                 throw new InvalidOperationException("Matrix determinant is zero and cannot be inverted.");
@@ -157,16 +157,15 @@ namespace Godot
 
         /// <summary>
         /// Returns the determinant of the basis matrix. If the basis is
-        /// uniformly scaled, then its determinant equals the square of the
-        /// scale factor.
+        /// uniformly scaled, its determinant is the square of the scale.
         ///
-        /// A negative determinant means the basis was flipped, so one part of
-        /// the scale is negative. A zero determinant means the basis isn't
-        /// invertible, and is usually considered invalid.
+        /// A negative determinant means the Y scale is negative.
+        /// A zero determinant means the basis isn't invertible,
+        /// and is usually considered invalid.
         /// </summary>
         /// <returns>The determinant of the basis matrix.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly real_t Determinant()
+        private readonly real_t BasisDeterminant()
         {
             return (X.X * Y.Y) - (X.Y * Y.X);
         }

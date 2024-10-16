@@ -364,8 +364,7 @@ static int ssl_write_session_ticket_ext(mbedtls_ssl_context *ssl,
 
     *olen = 0;
 
-    if (mbedtls_ssl_conf_get_session_tickets(ssl->conf) ==
-        MBEDTLS_SSL_SESSION_TICKETS_DISABLED) {
+    if (ssl->conf->session_tickets == MBEDTLS_SSL_SESSION_TICKETS_DISABLED) {
         return 0;
     }
 
@@ -788,8 +787,7 @@ static int ssl_parse_session_ticket_ext(mbedtls_ssl_context *ssl,
                                         const unsigned char *buf,
                                         size_t len)
 {
-    if ((mbedtls_ssl_conf_get_session_tickets(ssl->conf) ==
-         MBEDTLS_SSL_SESSION_TICKETS_DISABLED) ||
+    if (ssl->conf->session_tickets == MBEDTLS_SSL_SESSION_TICKETS_DISABLED ||
         len != 0) {
         MBEDTLS_SSL_DEBUG_MSG(1,
                               ("non-matching session ticket extension"));

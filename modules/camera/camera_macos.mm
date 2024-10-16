@@ -182,7 +182,7 @@
 		}
 
 		// set our texture...
-		feed->set_ycbcr_images(img[0], img[1]);
+		feed->set_YCbCr_imgs(img[0], img[1]);
 	}
 
 	// and unlock
@@ -307,17 +307,11 @@ MyDeviceNotifications *device_notifications = nil;
 // CameraMacOS - Subclass for our camera server on macOS
 
 void CameraMacOS::update_feeds() {
-#if __MAC_OS_X_VERSION_MIN_REQUIRED >= 101500
-	AVCaptureDeviceDiscoverySession *session;
-#if __MAC_OS_X_VERSION_MIN_REQUIRED >= 140000
-	// Avoid deprecated warning if the minimum SDK is 14.0.
-	session = [AVCaptureDeviceDiscoverySession discoverySessionWithDeviceTypes:[NSArray arrayWithObjects:AVCaptureDeviceTypeExternal, AVCaptureDeviceTypeBuiltInWideAngleCamera, nil] mediaType:AVMediaTypeVideo position:AVCaptureDevicePositionUnspecified];
+#if MAC_OS_X_VERSION_MIN_REQUIRED >= 101500
+	AVCaptureDeviceDiscoverySession *session = [AVCaptureDeviceDiscoverySession discoverySessionWithDeviceTypes:[NSArray arrayWithObjects:AVCaptureDeviceTypeExternalUnknown, AVCaptureDeviceTypeBuiltInWideAngleCamera, nil] mediaType:AVMediaTypeVideo position:AVCaptureDevicePositionUnspecified];
+	NSArray *devices = session.devices;
 #else
-	session = [AVCaptureDeviceDiscoverySession discoverySessionWithDeviceTypes:[NSArray arrayWithObjects:AVCaptureDeviceTypeExternalUnknown, AVCaptureDeviceTypeBuiltInWideAngleCamera, nil] mediaType:AVMediaTypeVideo position:AVCaptureDevicePositionUnspecified];
-#endif
-	NSArray<AVCaptureDevice *> *devices = session.devices;
-#else
-	NSArray<AVCaptureDevice *> *devices = [AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo];
+	NSArray *devices = [AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo];
 #endif
 
 	// remove devices that are gone..

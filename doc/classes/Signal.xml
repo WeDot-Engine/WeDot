@@ -48,7 +48,7 @@
 			<param index="0" name="object" type="Object" />
 			<param index="1" name="signal" type="StringName" />
 			<description>
-				Creates a [Signal] object referencing a signal named [param signal] in the specified [param object].
+				Creates a new [Signal] named [param signal] in the specified [param object].
 			</description>
 		</constructor>
 	</constructors>
@@ -109,12 +109,6 @@
 				Returns the ID of the object emitting this signal (see [method Object.get_instance_id]).
 			</description>
 		</method>
-		<method name="has_connections" qualifiers="const">
-			<return type="bool" />
-			<description>
-				Returns [code]true[/code] if any [Callable] is connected to this signal.
-			</description>
-		</method>
 		<method name="is_connected" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="callable" type="Callable" />
@@ -125,7 +119,7 @@
 		<method name="is_null" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if this [Signal] has no object and the signal name is empty. Equivalent to [code]signal == Signal()[/code].
+				Returns [code]true[/code] if the signal's name does not exist in its object, or the object is not valid.
 			</description>
 		</method>
 	</methods>

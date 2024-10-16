@@ -79,6 +79,7 @@ class CPUParticles2DEditorPlugin : public EditorPlugin {
 
 protected:
 	void _notification(int p_what);
+	static void _bind_methods();
 
 public:
 	virtual String get_name() const override { return "CPUParticles2D"; }

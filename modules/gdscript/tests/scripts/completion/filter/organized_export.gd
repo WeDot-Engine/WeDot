@@ -5,5 +5,4 @@ extends CPUParticles2D
 @export_subgroup("Test Subgroup")
 
 func _init():
-    t➡
-    pass
+    ➡

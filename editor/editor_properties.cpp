@@ -81,6 +81,7 @@ void EditorPropertyText::_text_submitted(const String &p_string) {
 	}
 
 	if (text->has_focus()) {
+		text->release_focus();
 		_text_changed(p_string);
 	}
 }
@@ -126,6 +127,9 @@ void EditorPropertyText::set_secret(bool p_enabled) {
 
 void EditorPropertyText::set_placeholder(const String &p_string) {
 	text->set_placeholder(p_string);
+}
+
+void EditorPropertyText::_bind_methods() {
 }
 
 EditorPropertyText::EditorPropertyText() {
@@ -213,6 +217,9 @@ void EditorPropertyMultilineText::_notification(int p_what) {
 			text->set_custom_minimum_size(Vector2(0, font->get_height(font_size) * 6));
 		} break;
 	}
+}
+
+void EditorPropertyMultilineText::_bind_methods() {
 }
 
 EditorPropertyMultilineText::EditorPropertyMultilineText(bool p_expression) {
@@ -336,6 +343,9 @@ void EditorPropertyTextEnum::setup(const Vector<String> &p_options, bool p_strin
 	}
 }
 
+void EditorPropertyTextEnum::_bind_methods() {
+}
+
 void EditorPropertyTextEnum::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
@@ -435,6 +445,9 @@ void EditorPropertyLocale::_notification(int p_what) {
 
 void EditorPropertyLocale::_locale_focus_exited() {
 	_locale_selected(locale->get_text());
+}
+
+void EditorPropertyLocale::_bind_methods() {
 }
 
 EditorPropertyLocale::EditorPropertyLocale() {
@@ -573,6 +586,9 @@ bool EditorPropertyPath::_can_drop_data_fw(const Point2 &p_point, const Variant 
 	return false;
 }
 
+void EditorPropertyPath::_bind_methods() {
+}
+
 EditorPropertyPath::EditorPropertyPath() {
 	HBoxContainer *path_hb = memnew(HBoxContainer);
 	add_child(path_hb);
@@ -621,6 +637,9 @@ void EditorPropertyClassName::_dialog_created() {
 	update_property();
 }
 
+void EditorPropertyClassName::_bind_methods() {
+}
+
 EditorPropertyClassName::EditorPropertyClassName() {
 	property = memnew(Button);
 	property->set_clip_text(true);
@@ -648,6 +667,9 @@ void EditorPropertyCheck::update_property() {
 	bool c = get_edited_property_value();
 	checkbox->set_pressed(c);
 	checkbox->set_disabled(is_read_only());
+}
+
+void EditorPropertyCheck::_bind_methods() {
 }
 
 EditorPropertyCheck::EditorPropertyCheck() {
@@ -687,25 +709,23 @@ void EditorPropertyEnum::update_property() {
 
 void EditorPropertyEnum::setup(const Vector<String> &p_options) {
 	options->clear();
-	HashMap<int64_t, Vector<String>> items;
 	int64_t current_val = 0;
-	for (const String &option : p_options) {
-		Vector<String> text_split = option.split(":");
+	for (int i = 0; i < p_options.size(); i++) {
+		Vector<String> text_split = p_options[i].split(":");
 		if (text_split.size() != 1) {
 			current_val = text_split[1].to_int();
 		}
-		items[current_val].push_back(text_split[0]);
+		options->add_item(text_split[0]);
+		options->set_item_metadata(i, current_val);
 		current_val += 1;
-	}
-
-	for (const KeyValue<int64_t, Vector<String>> &K : items) {
-		options->add_item(String(", ").join(K.value));
-		options->set_item_metadata(-1, K.key);
 	}
 }
 
 void EditorPropertyEnum::set_option_button_clip(bool p_enable) {
 	options->set_clip_text(p_enable);
+}
+
+void EditorPropertyEnum::_bind_methods() {
 }
 
 EditorPropertyEnum::EditorPropertyEnum() {
@@ -782,6 +802,9 @@ void EditorPropertyFlags::setup(const Vector<String> &p_options) {
 			first = false;
 		}
 	}
+}
+
+void EditorPropertyFlags::_bind_methods() {
 }
 
 EditorPropertyFlags::EditorPropertyFlags() {
@@ -1257,6 +1280,9 @@ void EditorPropertyLayers::_refresh_names() {
 	setup(layer_type);
 }
 
+void EditorPropertyLayers::_bind_methods() {
+}
+
 EditorPropertyLayers::EditorPropertyLayers() {
 	HBoxContainer *hb = memnew(HBoxContainer);
 	hb->set_clip_contents(true);
@@ -1302,6 +1328,9 @@ void EditorPropertyInteger::update_property() {
 		WARN_PRINT("Cannot reliably represent '" + itos(val) + "' in the inspector, value is too large.");
 	}
 #endif
+}
+
+void EditorPropertyInteger::_bind_methods() {
 }
 
 void EditorPropertyInteger::setup(int64_t p_min, int64_t p_max, int64_t p_step, bool p_hide_slider, bool p_allow_greater, bool p_allow_lesser, const String &p_suffix) {
@@ -1356,6 +1385,9 @@ void EditorPropertyObjectID::setup(const String &p_base_type) {
 	base_type = p_base_type;
 }
 
+void EditorPropertyObjectID::_bind_methods() {
+}
+
 EditorPropertyObjectID::EditorPropertyObjectID() {
 	edit = memnew(Button);
 	add_child(edit);
@@ -1381,6 +1413,9 @@ void EditorPropertySignal::update_property() {
 	edit->set_icon(get_editor_theme_icon(SNAME("Signals")));
 }
 
+void EditorPropertySignal::_bind_methods() {
+}
+
 EditorPropertySignal::EditorPropertySignal() {
 	edit = memnew(Button);
 	add_child(edit);
@@ -1398,6 +1433,9 @@ void EditorPropertyCallable::update_property() {
 	edit->set_text("Callable");
 	edit->set_disabled(true);
 	edit->set_icon(get_editor_theme_icon(SNAME("Callable")));
+}
+
+void EditorPropertyCallable::_bind_methods() {
 }
 
 EditorPropertyCallable::EditorPropertyCallable() {
@@ -1425,6 +1463,9 @@ void EditorPropertyFloat::update_property() {
 		val = Math::rad_to_deg(val);
 	}
 	spin->set_value_no_signal(val);
+}
+
+void EditorPropertyFloat::_bind_methods() {
 }
 
 void EditorPropertyFloat::setup(double p_min, double p_max, double p_step, bool p_hide_slider, bool p_exp_range, bool p_greater, bool p_lesser, const String &p_suffix, bool p_radians_as_degrees) {
@@ -1634,6 +1675,9 @@ void EditorPropertyEasing::_notification(int p_what) {
 	}
 }
 
+void EditorPropertyEasing::_bind_methods() {
+}
+
 EditorPropertyEasing::EditorPropertyEasing() {
 	easing_draw = memnew(Control);
 	easing_draw->connect(SceneStringName(draw), callable_mp(this, &EditorPropertyEasing::_draw_easing));
@@ -1694,6 +1738,9 @@ void EditorPropertyRect2::_notification(int p_what) {
 			}
 		} break;
 	}
+}
+
+void EditorPropertyRect2::_bind_methods() {
 }
 
 void EditorPropertyRect2::setup(double p_min, double p_max, double p_step, bool p_hide_slider, const String &p_suffix) {
@@ -1790,6 +1837,9 @@ void EditorPropertyRect2i::_notification(int p_what) {
 	}
 }
 
+void EditorPropertyRect2i::_bind_methods() {
+}
+
 void EditorPropertyRect2i::setup(int p_min, int p_max, const String &p_suffix) {
 	for (int i = 0; i < 4; i++) {
 		spin[i]->set_min(p_min);
@@ -1881,6 +1931,9 @@ void EditorPropertyPlane::_notification(int p_what) {
 			}
 		} break;
 	}
+}
+
+void EditorPropertyPlane::_bind_methods() {
 }
 
 void EditorPropertyPlane::setup(double p_min, double p_max, double p_step, bool p_hide_slider, const String &p_suffix) {
@@ -2032,6 +2085,9 @@ void EditorPropertyQuaternion::_notification(int p_what) {
 	}
 }
 
+void EditorPropertyQuaternion::_bind_methods() {
+}
+
 void EditorPropertyQuaternion::setup(double p_min, double p_max, double p_step, bool p_hide_slider, const String &p_suffix, bool p_hide_editor) {
 	for (int i = 0; i < 4; i++) {
 		spin[i]->set_min(p_min);
@@ -2176,6 +2232,9 @@ void EditorPropertyAABB::_notification(int p_what) {
 	}
 }
 
+void EditorPropertyAABB::_bind_methods() {
+}
+
 void EditorPropertyAABB::setup(double p_min, double p_max, double p_step, bool p_hide_slider, const String &p_suffix) {
 	for (int i = 0; i < 6; i++) {
 		spin[i]->set_min(p_min);
@@ -2252,6 +2311,9 @@ void EditorPropertyTransform2D::_notification(int p_what) {
 			}
 		} break;
 	}
+}
+
+void EditorPropertyTransform2D::_bind_methods() {
 }
 
 void EditorPropertyTransform2D::setup(double p_min, double p_max, double p_step, bool p_hide_slider, const String &p_suffix) {
@@ -2334,6 +2396,9 @@ void EditorPropertyBasis::_notification(int p_what) {
 			}
 		} break;
 	}
+}
+
+void EditorPropertyBasis::_bind_methods() {
 }
 
 void EditorPropertyBasis::setup(double p_min, double p_max, double p_step, bool p_hide_slider, const String &p_suffix) {
@@ -2423,6 +2488,9 @@ void EditorPropertyTransform3D::_notification(int p_what) {
 			}
 		} break;
 	}
+}
+
+void EditorPropertyTransform3D::_bind_methods() {
 }
 
 void EditorPropertyTransform3D::setup(double p_min, double p_max, double p_step, bool p_hide_slider, const String &p_suffix) {
@@ -2520,6 +2588,9 @@ void EditorPropertyProjection::_notification(int p_what) {
 			}
 		} break;
 	}
+}
+
+void EditorPropertyProjection::_bind_methods() {
 }
 
 void EditorPropertyProjection::setup(double p_min, double p_max, double p_step, bool p_hide_slider, const String &p_suffix) {
@@ -3779,7 +3850,7 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				return editor;
 			} else {
 				EditorPropertyDictionary *editor = memnew(EditorPropertyDictionary);
-				editor->setup(p_hint, p_hint_text);
+				editor->setup(p_hint);
 				return editor;
 			}
 		} break;

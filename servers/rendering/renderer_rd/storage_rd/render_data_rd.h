@@ -38,6 +38,9 @@
 class RenderDataRD : public RenderData {
 	GDCLASS(RenderDataRD, RenderData);
 
+protected:
+	static void _bind_methods();
+
 public:
 	// Access methods to expose data externally
 	virtual Ref<RenderSceneBuffers> get_render_scene_buffers() const override;
@@ -72,8 +75,6 @@ public:
 
 	uint32_t directional_light_count = 0;
 	bool directional_light_soft_shadows = false;
-
-	bool lightmap_bicubic_filter = false;
 
 	RenderingMethod::RenderInfo *render_info = nullptr;
 

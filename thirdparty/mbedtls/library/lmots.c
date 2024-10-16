@@ -387,10 +387,6 @@ void mbedtls_lmots_public_init(mbedtls_lmots_public_t *ctx)
 
 void mbedtls_lmots_public_free(mbedtls_lmots_public_t *ctx)
 {
-    if (ctx == NULL) {
-        return;
-    }
-
     mbedtls_platform_zeroize(ctx, sizeof(*ctx));
 }
 
@@ -560,10 +556,6 @@ void mbedtls_lmots_private_init(mbedtls_lmots_private_t *ctx)
 
 void mbedtls_lmots_private_free(mbedtls_lmots_private_t *ctx)
 {
-    if (ctx == NULL) {
-        return;
-    }
-
     mbedtls_platform_zeroize(ctx,
                              sizeof(*ctx));
 }

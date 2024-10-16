@@ -33,12 +33,12 @@
 #include "core/config/project_settings.h"
 #include "core/io/file_access.h"
 
-DTLSServer *(*DTLSServer::_create)(bool p_notify_postinitialize) = nullptr;
+DTLSServer *(*DTLSServer::_create)() = nullptr;
 bool DTLSServer::available = false;
 
-DTLSServer *DTLSServer::create(bool p_notify_postinitialize) {
+DTLSServer *DTLSServer::create() {
 	if (_create) {
-		return _create(p_notify_postinitialize);
+		return _create();
 	}
 	return nullptr;
 }

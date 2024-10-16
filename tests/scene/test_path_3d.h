@@ -40,7 +40,7 @@ namespace TestPath3D {
 TEST_CASE("[Path3D] Initialization") {
 	SUBCASE("Path should be empty right after initialization") {
 		Path3D *test_path = memnew(Path3D);
-		CHECK(test_path->get_curve().is_null());
+		CHECK(test_path->get_curve() == nullptr);
 		memdelete(test_path);
 	}
 }

@@ -35,8 +35,9 @@
 
 class Voxelizer {
 private:
-	enum : uint32_t {
+	enum {
 		CHILD_EMPTY = 0xFFFFFFFF
+
 	};
 
 	struct Cell {

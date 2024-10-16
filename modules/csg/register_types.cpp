@@ -30,6 +30,8 @@
 
 #include "register_types.h"
 
+#ifndef _3D_DISABLED
+
 #include "csg_shape.h"
 
 #ifdef TOOLS_ENABLED
@@ -60,3 +62,5 @@ void uninitialize_csg_module(ModuleInitializationLevel p_level) {
 		return;
 	}
 }
+
+#endif // _3D_DISABLED

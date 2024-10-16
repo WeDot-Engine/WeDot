@@ -31,7 +31,6 @@
 #include "dynamic_font_import_settings.h"
 
 #include "core/config/project_settings.h"
-#include "core/string/translation_server.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_inspector.h"
 #include "editor/editor_locale_dialog.h"
@@ -509,7 +508,7 @@ void DynamicFontImportSettingsDialog::_variation_add() {
 	Ref<DynamicFontImportSettingsData> import_variation_data;
 	import_variation_data.instantiate();
 	import_variation_data->owner = this;
-	ERR_FAIL_COND(import_variation_data.is_null());
+	ERR_FAIL_NULL(import_variation_data);
 
 	for (List<ResourceImporter::ImportOption>::Element *E = options_variations.front(); E; E = E->next()) {
 		import_variation_data->defaults[E->get().option.name] = E->get().default_value;
@@ -529,7 +528,7 @@ void DynamicFontImportSettingsDialog::_variation_selected() {
 	TreeItem *vars_item = vars_list->get_selected();
 	if (vars_item) {
 		Ref<DynamicFontImportSettingsData> import_variation_data = vars_item->get_metadata(0);
-		ERR_FAIL_COND(import_variation_data.is_null());
+		ERR_FAIL_NULL(import_variation_data);
 
 		inspector_vars->edit(import_variation_data.ptr());
 		import_variation_data->notify_property_list_changed();
@@ -588,14 +587,14 @@ void DynamicFontImportSettingsDialog::_variations_validate() {
 	}
 	for (TreeItem *vars_item_a = vars_list_root->get_first_child(); vars_item_a; vars_item_a = vars_item_a->get_next()) {
 		Ref<DynamicFontImportSettingsData> import_variation_data_a = vars_item_a->get_metadata(0);
-		ERR_FAIL_COND(import_variation_data_a.is_null());
+		ERR_FAIL_NULL(import_variation_data_a);
 
 		for (TreeItem *vars_item_b = vars_list_root->get_first_child(); vars_item_b; vars_item_b = vars_item_b->get_next()) {
 			if (vars_item_b != vars_item_a) {
 				bool match = true;
 				for (const KeyValue<StringName, Variant> &E : import_variation_data_a->settings) {
 					Ref<DynamicFontImportSettingsData> import_variation_data_b = vars_item_b->get_metadata(0);
-					ERR_FAIL_COND(import_variation_data_b.is_null());
+					ERR_FAIL_NULL(import_variation_data_b);
 					match = match && (import_variation_data_b->settings[E.key] == E.value);
 				}
 				if (match) {
@@ -956,7 +955,7 @@ void DynamicFontImportSettingsDialog::_re_import() {
 	Array configurations;
 	for (TreeItem *vars_item = vars_list_root->get_first_child(); vars_item; vars_item = vars_item->get_next()) {
 		Ref<DynamicFontImportSettingsData> import_variation_data = vars_item->get_metadata(0);
-		ERR_FAIL_COND(import_variation_data.is_null());
+		ERR_FAIL_NULL(import_variation_data);
 
 		Dictionary preload_config;
 		preload_config["name"] = vars_item->get_text(0);
@@ -1107,7 +1106,7 @@ void DynamicFontImportSettingsDialog::open_settings(const String &p_path) {
 	inspector_general->edit(nullptr);
 
 	text_settings_data.instantiate();
-	ERR_FAIL_COND(text_settings_data.is_null());
+	ERR_FAIL_NULL(text_settings_data);
 
 	text_settings_data->owner = this;
 
@@ -1137,7 +1136,7 @@ void DynamicFontImportSettingsDialog::open_settings(const String &p_path) {
 
 	Ref<ConfigFile> config;
 	config.instantiate();
-	ERR_FAIL_COND(config.is_null());
+	ERR_FAIL_NULL(config);
 
 	Error err = config->load(p_path + ".import");
 	print_verbose("Loading import settings:");
@@ -1169,7 +1168,7 @@ void DynamicFontImportSettingsDialog::open_settings(const String &p_path) {
 
 					Ref<DynamicFontImportSettingsData> import_variation_data_custom;
 					import_variation_data_custom.instantiate();
-					ERR_FAIL_COND(import_variation_data_custom.is_null());
+					ERR_FAIL_NULL(import_variation_data_custom);
 
 					import_variation_data_custom->owner = this;
 					for (List<ResourceImporter::ImportOption>::Element *F = options_variations.front(); F; F = F->next()) {

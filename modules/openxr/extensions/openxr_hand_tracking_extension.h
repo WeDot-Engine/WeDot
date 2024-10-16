@@ -48,7 +48,6 @@ public:
 		OPENXR_SOURCE_UNKNOWN,
 		OPENXR_SOURCE_UNOBSTRUCTED,
 		OPENXR_SOURCE_CONTROLLER,
-		OPENXR_SOURCE_NOT_TRACKED,
 		OPENXR_SOURCE_MAX
 	};
 
@@ -111,8 +110,6 @@ private:
 	bool hand_tracking_ext = false;
 	bool hand_motion_range_ext = false;
 	bool hand_tracking_source_ext = false;
-	bool unobstructed_data_source = false;
-	bool controller_data_source = false;
 
 	// functions
 	void cleanup_hand_tracking();

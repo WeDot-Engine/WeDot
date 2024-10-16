@@ -3,13 +3,14 @@ const const_color: Color = 'red'
 func func_color(arg_color: Color = 'blue') -> bool:
 	return arg_color == Color.BLUE
 
+@warning_ignore("assert_always_true")
 func test():
-	Utils.check(const_color == Color.RED)
+	assert(const_color == Color.RED)
 
-	Utils.check(func_color() == true)
-	Utils.check(func_color('blue') == true)
+	assert(func_color() == true)
+	assert(func_color('blue') == true)
 
 	var var_color: Color = 'green'
-	Utils.check(var_color == Color.GREEN)
+	assert(var_color == Color.GREEN)
 
 	print('ok')

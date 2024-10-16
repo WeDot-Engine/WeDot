@@ -48,6 +48,9 @@ void NodeDock::show_connections() {
 	connections->show();
 }
 
+void NodeDock::_bind_methods() {
+}
+
 void NodeDock::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:

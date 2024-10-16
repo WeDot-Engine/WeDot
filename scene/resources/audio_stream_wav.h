@@ -59,10 +59,10 @@ class AudioStreamPlaybackWAV : public AudioStreamPlayback {
 	} ima_adpcm[2];
 
 	struct QOA_State {
-		qoa_desc desc = {};
+		qoa_desc *desc = nullptr;
 		uint32_t data_ofs = 0;
 		uint32_t frame_len = 0;
-		LocalVector<int16_t> dec;
+		int16_t *dec = nullptr;
 		uint32_t dec_len = 0;
 		int64_t cache_pos = -1;
 		int16_t cache[2] = { 0, 0 };
@@ -137,7 +137,7 @@ private:
 	int loop_begin = 0;
 	int loop_end = 0;
 	int mix_rate = 44100;
-	LocalVector<uint8_t> data;
+	void *data = nullptr;
 	uint32_t data_bytes = 0;
 
 protected:

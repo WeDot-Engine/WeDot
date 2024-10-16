@@ -35,6 +35,7 @@
 #include "string_android.h"
 
 #include "core/config/engine.h"
+#include "core/config/project_settings.h"
 #include "core/error/error_macros.h"
 
 static HashMap<String, JNISingleton *> jni_singletons;
@@ -42,6 +43,7 @@ static HashMap<String, JNISingleton *> jni_singletons;
 void unregister_plugins_singletons() {
 	for (const KeyValue<String, JNISingleton *> &E : jni_singletons) {
 		Engine::get_singleton()->remove_singleton(E.key);
+		ProjectSettings::get_singleton()->set(E.key, Variant());
 
 		if (E.value) {
 			memdelete(E.value);
@@ -62,6 +64,7 @@ JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeR
 	jni_singletons[singname] = s;
 
 	Engine::get_singleton()->add_singleton(Engine::Singleton(singname, s));
+	ProjectSettings::get_singleton()->set(singname, s);
 	return true;
 }
 

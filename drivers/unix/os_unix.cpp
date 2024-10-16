@@ -493,7 +493,7 @@ Dictionary OS_Unix::get_memory_info() const {
 	return meminfo;
 }
 
-Dictionary OS_Unix::execute_with_pipe(const String &p_path, const List<String> &p_arguments, bool p_blocking) {
+Dictionary OS_Unix::execute_with_pipe(const String &p_path, const List<String> &p_arguments) {
 #define CLEAN_PIPES           \
 	if (pipe_in[0] >= 0) {    \
 		::close(pipe_in[0]);  \
@@ -578,11 +578,11 @@ Dictionary OS_Unix::execute_with_pipe(const String &p_path, const List<String> &
 
 	Ref<FileAccessUnixPipe> main_pipe;
 	main_pipe.instantiate();
-	main_pipe->open_existing(pipe_out[0], pipe_in[1], p_blocking);
+	main_pipe->open_existing(pipe_out[0], pipe_in[1]);
 
 	Ref<FileAccessUnixPipe> err_pipe;
 	err_pipe.instantiate();
-	err_pipe->open_existing(pipe_err[0], 0, p_blocking);
+	err_pipe->open_existing(pipe_err[0], 0);
 
 	ProcessInfo pi;
 	process_map_mutex.lock();

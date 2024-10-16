@@ -1,5 +1,7 @@
 extends Node
 
+const Utils = preload("../../utils.notest.gd")
+
 @export_enum("A", "B", "C") var test_1
 @export_enum("A", "B", "C",) var test_2
 

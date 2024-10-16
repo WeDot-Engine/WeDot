@@ -17,19 +17,17 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>4.4</string>
+	<string>4.3.1</string>
 	<key>CFBundleSignature</key>
-	<string>GODO</string>
+	<string>godot</string>
 	<key>CFBundleVersion</key>
-	<string>4.4</string>
+	<string>4.3.1</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Microphone access is required to capture audio.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Camera access is required to capture video.</string>
 	<key>NSRequiresAquaSystemAppearance</key>
 	<false/>
-	<key>NSCameraUseContinuityCameraDeviceType</key>
-	<true/>
 	<key>NSHumanReadableCopyright</key>
 	<string>© 2007-present Juan Linietsky, Ariel Manzur &amp; Godot Engine contributors</string>
 	<key>CFBundleSupportedPlatforms</key>
@@ -40,15 +38,10 @@
 	<string>NSApplication</string>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.developer-tools</string>
-	<key>LSArchitecturePriority</key>
-	<array>
-		<string>arm64</string>
-		<string>x86_64</string>
-	</array>
+	<key>LSMinimumSystemVersion</key>
+	<string>10.12</string>
 	<key>LSMinimumSystemVersionByArchitecture</key>
 	<dict>
-		<key>arm64</key>
-		<string>11.0</string>
 		<key>x86_64</key>
 		<string>10.12</string>
 	</dict>

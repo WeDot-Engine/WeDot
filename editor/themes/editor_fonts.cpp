@@ -117,7 +117,6 @@ void editor_register_fonts(const Ref<Theme> &p_theme) {
 	int font_hinting_setting = (int)EDITOR_GET("interface/editor/font_hinting");
 	TextServer::SubpixelPositioning font_subpixel_positioning = (TextServer::SubpixelPositioning)(int)EDITOR_GET("interface/editor/font_subpixel_positioning");
 	bool font_disable_embedded_bitmaps = (bool)EDITOR_GET("interface/editor/font_disable_embedded_bitmaps");
-	bool font_allow_msdf = (bool)EDITOR_GET("interface/editor/font_allow_msdf");
 
 	TextServer::Hinting font_hinting;
 	TextServer::Hinting font_mono_hinting;
@@ -154,7 +153,7 @@ void editor_register_fonts(const Ref<Theme> &p_theme) {
 	const float embolden_strength = 0.6;
 
 	Ref<Font> default_font = load_internal_font(_font_NotoSans_Regular, _font_NotoSans_Regular_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, font_disable_embedded_bitmaps, false);
-	Ref<Font> default_font_msdf = load_internal_font(_font_NotoSans_Regular, _font_NotoSans_Regular_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, font_disable_embedded_bitmaps, font_allow_msdf);
+	Ref<Font> default_font_msdf = load_internal_font(_font_NotoSans_Regular, _font_NotoSans_Regular_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, font_disable_embedded_bitmaps, true);
 
 	TypedArray<Font> fallbacks;
 	Ref<FontFile> arabic_font = load_internal_font(_font_NotoNaskhArabicUI_Regular, _font_NotoNaskhArabicUI_Regular_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, font_disable_embedded_bitmaps, false, &fallbacks);
@@ -174,7 +173,7 @@ void editor_register_fonts(const Ref<Theme> &p_theme) {
 	default_font_msdf->set_fallbacks(fallbacks);
 
 	Ref<FontFile> default_font_bold = load_internal_font(_font_NotoSans_Bold, _font_NotoSans_Bold_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, font_disable_embedded_bitmaps, false);
-	Ref<FontFile> default_font_bold_msdf = load_internal_font(_font_NotoSans_Bold, _font_NotoSans_Bold_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, font_disable_embedded_bitmaps, font_allow_msdf);
+	Ref<FontFile> default_font_bold_msdf = load_internal_font(_font_NotoSans_Bold, _font_NotoSans_Bold_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, font_disable_embedded_bitmaps, true);
 
 	TypedArray<Font> fallbacks_bold;
 	Ref<FontFile> arabic_font_bold = load_internal_font(_font_NotoNaskhArabicUI_Bold, _font_NotoNaskhArabicUI_Bold_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, font_disable_embedded_bitmaps, false, &fallbacks_bold);
@@ -235,7 +234,7 @@ void editor_register_fonts(const Ref<Theme> &p_theme) {
 	Ref<FontVariation> default_fc_msdf;
 	default_fc_msdf.instantiate();
 	if (custom_font_path.length() > 0 && dir->file_exists(custom_font_path)) {
-		Ref<FontFile> custom_font = load_external_font(custom_font_path, font_hinting, font_antialiasing, true, font_subpixel_positioning, font_disable_embedded_bitmaps, font_allow_msdf);
+		Ref<FontFile> custom_font = load_external_font(custom_font_path, font_hinting, font_antialiasing, true, font_subpixel_positioning, font_disable_embedded_bitmaps);
 		{
 			TypedArray<Font> fallback_custom;
 			fallback_custom.push_back(default_font_msdf);
@@ -278,7 +277,7 @@ void editor_register_fonts(const Ref<Theme> &p_theme) {
 	Ref<FontVariation> bold_fc_msdf;
 	bold_fc_msdf.instantiate();
 	if (custom_font_path_bold.length() > 0 && dir->file_exists(custom_font_path_bold)) {
-		Ref<FontFile> custom_font = load_external_font(custom_font_path_bold, font_hinting, font_antialiasing, true, font_subpixel_positioning, font_disable_embedded_bitmaps, font_allow_msdf);
+		Ref<FontFile> custom_font = load_external_font(custom_font_path_bold, font_hinting, font_antialiasing, true, font_subpixel_positioning, font_disable_embedded_bitmaps);
 		{
 			TypedArray<Font> fallback_custom;
 			fallback_custom.push_back(default_font_bold_msdf);
@@ -286,7 +285,7 @@ void editor_register_fonts(const Ref<Theme> &p_theme) {
 		}
 		bold_fc_msdf->set_base_font(custom_font);
 	} else if (custom_font_path.length() > 0 && dir->file_exists(custom_font_path)) {
-		Ref<FontFile> custom_font = load_external_font(custom_font_path, font_hinting, font_antialiasing, true, font_subpixel_positioning, font_disable_embedded_bitmaps, font_allow_msdf);
+		Ref<FontFile> custom_font = load_external_font(custom_font_path, font_hinting, font_antialiasing, true, font_subpixel_positioning, font_disable_embedded_bitmaps);
 		{
 			TypedArray<Font> fallback_custom;
 			fallback_custom.push_back(default_font_bold_msdf);

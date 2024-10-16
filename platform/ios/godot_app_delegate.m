@@ -32,11 +32,11 @@
 
 #import "app_delegate.h"
 
-@interface GodotApplicationDelegate ()
+@interface GodotApplicalitionDelegate ()
 
 @end
 
-@implementation GodotApplicationDelegate
+@implementation GodotApplicalitionDelegate
 
 static NSMutableArray<ApplicationDelegateService *> *services = nil;
 

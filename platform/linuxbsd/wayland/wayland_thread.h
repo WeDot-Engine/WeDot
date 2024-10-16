@@ -295,7 +295,7 @@ public:
 	};
 
 	struct PointerData {
-		Point2 position;
+		Point2i position;
 		uint32_t motion_time = 0;
 
 		// Relative motion has its own optional event and so needs its own time.
@@ -305,7 +305,7 @@ public:
 		BitField<MouseButtonMask> pressed_button_mask;
 
 		MouseButton last_button_pressed = MouseButton::NONE;
-		Point2 last_pressed_position;
+		Point2i last_pressed_position;
 
 		// This is needed to check for a new double click every time.
 		bool double_click_begun = false;
@@ -325,14 +325,14 @@ public:
 	};
 
 	struct TabletToolData {
-		Point2 position;
+		Point2i position;
 		Vector2 tilt;
 		uint32_t pressure = 0;
 
 		BitField<MouseButtonMask> pressed_button_mask;
 
 		MouseButton last_button_pressed = MouseButton::NONE;
-		Point2 last_pressed_position;
+		Point2i last_pressed_position;
 
 		bool double_click_begun = false;
 
@@ -469,6 +469,7 @@ public:
 		uint32_t *buffer_data = nullptr;
 		uint32_t buffer_data_size = 0;
 
+		RID rid;
 		Point2i hotspot;
 	};
 
@@ -505,8 +506,10 @@ private:
 
 	HashMap<DisplayServer::CursorShape, CustomCursor> custom_cursors;
 
-	DisplayServer::CursorShape cursor_shape = DisplayServer::CURSOR_ARROW;
-	bool cursor_visible = true;
+	struct wl_cursor *current_wl_cursor = nullptr;
+	struct CustomCursor *current_custom_cursor = nullptr;
+
+	DisplayServer::CursorShape last_cursor_shape = DisplayServer::CURSOR_ARROW;
 
 	PointerConstraint pointer_constraint = PointerConstraint::NONE;
 
@@ -665,7 +668,7 @@ private:
 		.preferred_buffer_transform = _wl_surface_on_preferred_buffer_transform,
 	};
 
-	static constexpr struct wl_callback_listener frame_wl_callback_listener = {
+	static constexpr struct wl_callback_listener frame_wl_callback_listener {
 		.done = _frame_wl_callback_on_done,
 	};
 
@@ -683,7 +686,7 @@ private:
 		.name = _wl_seat_on_name,
 	};
 
-	static constexpr struct wl_callback_listener cursor_frame_callback_listener = {
+	static constexpr struct wl_callback_listener cursor_frame_callback_listener {
 		.done = _cursor_frame_callback_on_done,
 	};
 
@@ -959,7 +962,7 @@ public:
 	DisplayServer::WindowID pointer_get_pointed_window_id() const;
 	BitField<MouseButtonMask> pointer_get_button_mask() const;
 
-	void cursor_set_visible(bool p_visible);
+	void cursor_hide();
 	void cursor_set_shape(DisplayServer::CursorShape p_cursor_shape);
 
 	void cursor_set_custom_shape(DisplayServer::CursorShape p_cursor_shape);

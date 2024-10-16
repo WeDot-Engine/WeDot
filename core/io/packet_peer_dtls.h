@@ -38,7 +38,7 @@ class PacketPeerDTLS : public PacketPeer {
 	GDCLASS(PacketPeerDTLS, PacketPeer);
 
 protected:
-	static PacketPeerDTLS *(*_create)(bool p_notify_postinitialize);
+	static PacketPeerDTLS *(*_create)();
 	static void _bind_methods();
 
 	static bool available;
@@ -57,7 +57,7 @@ public:
 	virtual void disconnect_from_peer() = 0;
 	virtual Status get_status() const = 0;
 
-	static PacketPeerDTLS *create(bool p_notify_postinitialize = true);
+	static PacketPeerDTLS *create();
 	static bool is_available();
 
 	PacketPeerDTLS() {}

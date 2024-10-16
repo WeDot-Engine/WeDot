@@ -38,7 +38,6 @@ enum BasisDecompressFormat {
 	BASIS_DECOMPRESS_RGB,
 	BASIS_DECOMPRESS_RGBA,
 	BASIS_DECOMPRESS_RG_AS_RA,
-	BASIS_DECOMPRESS_R,
 };
 
 void basis_universal_init();

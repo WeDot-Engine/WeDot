@@ -32,10 +32,6 @@ partial class EventSignals
         add => backing_MySignal += value;
         remove => backing_MySignal -= value;
 }
-    protected void OnMySignal(string str, int num)
-    {
-        EmitSignal(SignalName.MySignal, str, num);
-    }
     /// <inheritdoc/>
     [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
     protected override void RaiseGodotClassSignalCallbacks(in godot_string_name signal, NativeVariantPtrArgs args)

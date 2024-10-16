@@ -109,7 +109,6 @@ private:
 
 	void _activate_pressed();
 	void _clear_pressed();
-	void _autostart_toggled(bool p_toggled_on);
 
 	String _get_time_as_text(float p_time);
 
@@ -138,7 +137,7 @@ protected:
 public:
 	void add_frame_metric(const Metric &p_metric);
 	void set_enabled(bool p_enable);
-	void set_profiling(bool p_profiling);
+	void set_pressed(bool p_pressed);
 	bool is_profiling();
 	bool is_seeking() { return seeking; }
 	void disable_seeking();

@@ -1,3 +1,5 @@
+const Utils = preload("../../utils.notest.gd")
+
 # GH-73843
 @export_group("Resource")
 

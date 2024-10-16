@@ -51,7 +51,6 @@ private:
 
 	VBoxContainer *main_vb = nullptr;
 	ScrollContainer *scroll = nullptr;
-	Label *all_selected = nullptr;
 
 protected:
 	static void _bind_methods();

@@ -38,7 +38,7 @@
 extern "C" { 
 #endif
 // Generated dispatch table
-struct XrGeneratedDispatchTableCore {
+struct XrGeneratedDispatchTable {
 
     // ---- Core 1.0 commands
     PFN_xrGetInstanceProcAddr GetInstanceProcAddr;
@@ -97,9 +97,6 @@ struct XrGeneratedDispatchTableCore {
     PFN_xrApplyHapticFeedback ApplyHapticFeedback;
     PFN_xrStopHapticFeedback StopHapticFeedback;
 
-    // ---- Core 1.1 commands
-    PFN_xrLocateSpaces LocateSpaces;
-
     // ---- XR_EXT_debug_utils extension commands
     PFN_xrSetDebugUtilsObjectNameEXT SetDebugUtilsObjectNameEXT;
     PFN_xrCreateDebugUtilsMessengerEXT CreateDebugUtilsMessengerEXT;
@@ -112,7 +109,7 @@ struct XrGeneratedDispatchTableCore {
 
 
 // Prototype for dispatch table helper function
-void GeneratedXrPopulateDispatchTableCore(struct XrGeneratedDispatchTableCore *table,
+void GeneratedXrPopulateDispatchTable(struct XrGeneratedDispatchTable *table,
                                       XrInstance instance,
                                       PFN_xrGetInstanceProcAddr get_inst_proc_addr);
 

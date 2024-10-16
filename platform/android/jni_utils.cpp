@@ -30,8 +30,6 @@
 
 #include "jni_utils.h"
 
-#include "api/java_class_wrapper.h"
-
 jvalret _variant_to_jvalue(JNIEnv *env, Variant::Type p_type, const Variant *p_arg, bool force_jobject) {
 	jvalret v;
 
@@ -186,16 +184,6 @@ jvalret _variant_to_jvalue(JNIEnv *env, Variant::Type p_type, const Variant *p_a
 			v.val.l = arr;
 			v.obj = arr;
 
-		} break;
-		case Variant::OBJECT: {
-			Ref<JavaObject> generic_object = *p_arg;
-			if (generic_object.is_valid()) {
-				jobject obj = env->NewLocalRef(generic_object->get_instance());
-				v.val.l = obj;
-				v.obj = obj;
-			} else {
-				v.val.i = 0;
-			}
 		} break;
 
 		default: {
@@ -370,11 +358,9 @@ Variant _jobject_to_variant(JNIEnv *env, jobject obj) {
 		return ret;
 	}
 
-	Ref<JavaObject> generic_object(memnew(JavaObject(JavaClassWrapper::get_singleton()->wrap(name), obj)));
-
 	env->DeleteLocalRef(c);
 
-	return generic_object;
+	return Variant();
 }
 
 Variant::Type get_jni_type(const String &p_type) {
@@ -409,10 +395,10 @@ Variant::Type get_jni_type(const String &p_type) {
 		idx++;
 	}
 
-	return Variant::OBJECT;
+	return Variant::NIL;
 }
 
-String get_jni_sig(const String &p_type) {
+const char *get_jni_sig(const String &p_type) {
 	static struct {
 		const char *name;
 		const char *sig;
@@ -444,5 +430,5 @@ String get_jni_sig(const String &p_type) {
 		idx++;
 	}
 
-	return "L" + p_type.replace(".", "/") + ";";
+	return "Ljava/lang/Object;";
 }

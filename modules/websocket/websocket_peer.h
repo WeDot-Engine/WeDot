@@ -59,7 +59,7 @@ private:
 	virtual Error _send_bind(const PackedByteArray &p_data, WriteMode p_mode = WRITE_MODE_BINARY);
 
 protected:
-	static WebSocketPeer *(*_create)(bool p_notify_postinitialize);
+	static WebSocketPeer *(*_create)();
 
 	static void _bind_methods();
 
@@ -74,11 +74,11 @@ protected:
 	int max_queued_packets = 2048;
 
 public:
-	static WebSocketPeer *create(bool p_notify_postinitialize = true) {
+	static WebSocketPeer *create() {
 		if (!_create) {
 			return nullptr;
 		}
-		return _create(p_notify_postinitialize);
+		return _create();
 	}
 
 	virtual Error connect_to_url(const String &p_url, Ref<TLSOptions> p_options = Ref<TLSOptions>()) = 0;

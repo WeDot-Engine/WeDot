@@ -59,9 +59,11 @@ bool FileAccess::exists(const String &p_name) {
 		return true;
 	}
 
-	// Using file_exists because it's faster than trying to open the file.
-	Ref<FileAccess> ret = create_for_path(p_name);
-	return ret->file_exists(p_name);
+	Ref<FileAccess> f = open(p_name, READ);
+	if (f.is_null()) {
+		return false;
+	}
+	return true;
 }
 
 void FileAccess::_set_access_type(AccessType p_access) {
@@ -223,44 +225,59 @@ String FileAccess::fix_path(const String &p_path) const {
 }
 
 /* these are all implemented for ease of porting, then can later be optimized */
-uint8_t FileAccess::get_8() const {
-	uint8_t data = 0;
-	get_buffer(&data, sizeof(uint8_t));
-
-	return data;
-}
 
 uint16_t FileAccess::get_16() const {
-	uint16_t data = 0;
-	get_buffer(reinterpret_cast<uint8_t *>(&data), sizeof(uint16_t));
+	uint16_t res;
+	uint8_t a, b;
+
+	a = get_8();
+	b = get_8();
 
 	if (big_endian) {
-		data = BSWAP16(data);
+		SWAP(a, b);
 	}
 
-	return data;
+	res = b;
+	res <<= 8;
+	res |= a;
+
+	return res;
 }
 
 uint32_t FileAccess::get_32() const {
-	uint32_t data = 0;
-	get_buffer(reinterpret_cast<uint8_t *>(&data), sizeof(uint32_t));
+	uint32_t res;
+	uint16_t a, b;
+
+	a = get_16();
+	b = get_16();
 
 	if (big_endian) {
-		data = BSWAP32(data);
+		SWAP(a, b);
 	}
 
-	return data;
+	res = b;
+	res <<= 16;
+	res |= a;
+
+	return res;
 }
 
 uint64_t FileAccess::get_64() const {
-	uint64_t data = 0;
-	get_buffer(reinterpret_cast<uint8_t *>(&data), sizeof(uint64_t));
+	uint64_t res;
+	uint32_t a, b;
+
+	a = get_32();
+	b = get_32();
 
 	if (big_endian) {
-		data = BSWAP64(data);
+		SWAP(a, b);
 	}
 
-	return data;
+	res = b;
+	res <<= 32;
+	res |= a;
+
+	return res;
 }
 
 float FileAccess::get_float() const {
@@ -450,6 +467,17 @@ String FileAccess::get_as_text(bool p_skip_cr) const {
 	return text;
 }
 
+uint64_t FileAccess::get_buffer(uint8_t *p_dst, uint64_t p_length) const {
+	ERR_FAIL_COND_V(!p_dst && p_length > 0, -1);
+
+	uint64_t i = 0;
+	for (i = 0; i < p_length && !eof_reached(); i++) {
+		p_dst[i] = get_8();
+	}
+
+	return i;
+}
+
 Vector<uint8_t> FileAccess::get_buffer(int64_t p_length) const {
 	Vector<uint8_t> data;
 
@@ -462,7 +490,7 @@ Vector<uint8_t> FileAccess::get_buffer(int64_t p_length) const {
 	ERR_FAIL_COND_V_MSG(err != OK, data, "Can't resize data to " + itos(p_length) + " elements.");
 
 	uint8_t *w = data.ptrw();
-	int64_t len = get_buffer(w, p_length);
+	int64_t len = get_buffer(&w[0], p_length);
 
 	if (len < p_length) {
 		data.resize(len);
@@ -486,32 +514,46 @@ String FileAccess::get_as_utf8_string(bool p_skip_cr) const {
 	return s;
 }
 
-void FileAccess::store_8(uint8_t p_dest) {
-	store_buffer(&p_dest, sizeof(uint8_t));
-}
-
 void FileAccess::store_16(uint16_t p_dest) {
+	uint8_t a, b;
+
+	a = p_dest & 0xFF;
+	b = p_dest >> 8;
+
 	if (big_endian) {
-		p_dest = BSWAP16(p_dest);
+		SWAP(a, b);
 	}
 
-	store_buffer(reinterpret_cast<uint8_t *>(&p_dest), sizeof(uint16_t));
+	store_8(a);
+	store_8(b);
 }
 
 void FileAccess::store_32(uint32_t p_dest) {
+	uint16_t a, b;
+
+	a = p_dest & 0xFFFF;
+	b = p_dest >> 16;
+
 	if (big_endian) {
-		p_dest = BSWAP32(p_dest);
+		SWAP(a, b);
 	}
 
-	store_buffer(reinterpret_cast<uint8_t *>(&p_dest), sizeof(uint32_t));
+	store_16(a);
+	store_16(b);
 }
 
 void FileAccess::store_64(uint64_t p_dest) {
+	uint32_t a, b;
+
+	a = p_dest & 0xFFFFFFFF;
+	b = p_dest >> 32;
+
 	if (big_endian) {
-		p_dest = BSWAP64(p_dest);
+		SWAP(a, b);
 	}
 
-	store_buffer(reinterpret_cast<uint8_t *>(&p_dest), sizeof(uint64_t));
+	store_32(a);
+	store_32(b);
 }
 
 void FileAccess::store_real(real_t p_real) {
@@ -668,11 +710,22 @@ void FileAccess::store_csv_line(const Vector<String> &p_values, const String &p_
 	store_line(line);
 }
 
+void FileAccess::store_buffer(const uint8_t *p_src, uint64_t p_length) {
+	ERR_FAIL_COND(!p_src && p_length > 0);
+	for (uint64_t i = 0; i < p_length; i++) {
+		store_8(p_src[i]);
+	}
+}
+
 void FileAccess::store_buffer(const Vector<uint8_t> &p_buffer) {
 	uint64_t len = p_buffer.size();
+	if (len == 0) {
+		return;
+	}
+
 	const uint8_t *r = p_buffer.ptr();
 
-	store_buffer(r, len);
+	store_buffer(&r[0], len);
 }
 
 void FileAccess::store_var(const Variant &p_var, bool p_full_objects) {

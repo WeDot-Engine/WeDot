@@ -265,6 +265,11 @@ namespace GodotTools.Build
                 success = Publish(buildInfo);
             }
 
+            if (!success)
+            {
+                ShowBuildErrorDialog("Failed to publish .NET project");
+            }
+
             return success;
         }
 

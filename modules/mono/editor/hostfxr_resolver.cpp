@@ -216,7 +216,6 @@ bool get_default_installation_dir(String &r_dotnet_root) {
 #endif
 }
 
-#ifndef WINDOWS_ENABLED
 bool get_install_location_from_file(const String &p_file_path, String &r_dotnet_root) {
 	Error err = OK;
 	Ref<FileAccess> f = FileAccess::open(p_file_path, FileAccess::READ, &err);
@@ -234,7 +233,6 @@ bool get_install_location_from_file(const String &p_file_path, String &r_dotnet_
 	r_dotnet_root = line;
 	return true;
 }
-#endif
 
 bool get_dotnet_self_registered_dir(String &r_dotnet_root) {
 #if defined(WINDOWS_ENABLED)
@@ -262,7 +260,7 @@ bool get_dotnet_self_registered_dir(String &r_dotnet_root) {
 		return false;
 	}
 
-	r_dotnet_root = String::utf16((const char16_t *)buffer.ptr()).replace("\\", "/");
+	r_dotnet_root = String::utf16((const char16_t *)buffer.ptr());
 	RegCloseKey(hkey);
 	return true;
 #else

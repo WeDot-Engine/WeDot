@@ -200,6 +200,9 @@ class AnimationNodeAdd2 : public AnimationNodeSync {
 
 	StringName add_amount = PNAME("add_amount");
 
+protected:
+	static void _bind_methods();
+
 public:
 	void get_parameter_list(List<PropertyInfo> *r_list) const override;
 	virtual Variant get_parameter_default_value(const StringName &p_parameter) const override;
@@ -216,6 +219,9 @@ class AnimationNodeAdd3 : public AnimationNodeSync {
 	GDCLASS(AnimationNodeAdd3, AnimationNodeSync);
 
 	StringName add_amount = PNAME("add_amount");
+
+protected:
+	static void _bind_methods();
 
 public:
 	void get_parameter_list(List<PropertyInfo> *r_list) const override;
@@ -234,6 +240,9 @@ class AnimationNodeBlend2 : public AnimationNodeSync {
 
 	StringName blend_amount = PNAME("blend_amount");
 
+protected:
+	static void _bind_methods();
+
 public:
 	virtual void get_parameter_list(List<PropertyInfo> *r_list) const override;
 	virtual Variant get_parameter_default_value(const StringName &p_parameter) const override;
@@ -250,6 +259,9 @@ class AnimationNodeBlend3 : public AnimationNodeSync {
 
 	StringName blend_amount = PNAME("blend_amount");
 
+protected:
+	static void _bind_methods();
+
 public:
 	virtual void get_parameter_list(List<PropertyInfo> *r_list) const override;
 	virtual Variant get_parameter_default_value(const StringName &p_parameter) const override;
@@ -264,6 +276,9 @@ class AnimationNodeSub2 : public AnimationNodeSync {
 	GDCLASS(AnimationNodeSub2, AnimationNodeSync);
 
 	StringName sub_amount = PNAME("sub_amount");
+
+protected:
+	static void _bind_methods();
 
 public:
 	void get_parameter_list(List<PropertyInfo> *r_list) const override;
@@ -282,6 +297,9 @@ class AnimationNodeTimeScale : public AnimationNode {
 
 	StringName scale = PNAME("scale");
 
+protected:
+	static void _bind_methods();
+
 public:
 	virtual void get_parameter_list(List<PropertyInfo> *r_list) const override;
 	virtual Variant get_parameter_default_value(const StringName &p_parameter) const override;
@@ -297,6 +315,9 @@ class AnimationNodeTimeSeek : public AnimationNode {
 	GDCLASS(AnimationNodeTimeSeek, AnimationNode);
 
 	StringName seek_pos_request = PNAME("seek_request");
+
+protected:
+	static void _bind_methods();
 
 public:
 	virtual void get_parameter_list(List<PropertyInfo> *r_list) const override;

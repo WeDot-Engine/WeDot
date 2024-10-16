@@ -33,11 +33,8 @@ package org.godotengine.godot.io.file
 import android.content.Context
 import android.util.Log
 import android.util.SparseArray
-import org.godotengine.godot.error.Error
 import org.godotengine.godot.io.StorageScope
 import java.io.FileNotFoundException
-import java.io.InputStream
-import java.lang.UnsupportedOperationException
 import java.nio.ByteBuffer
 
 /**
@@ -48,20 +45,8 @@ class FileAccessHandler(val context: Context) {
 	companion object {
 		private val TAG = FileAccessHandler::class.java.simpleName
 
-		private const val INVALID_FILE_ID = 0
+		internal const val INVALID_FILE_ID = 0
 		private const val STARTING_FILE_ID = 1
-		private val FILE_OPEN_FAILED = Pair(Error.FAILED, INVALID_FILE_ID)
-
-		internal fun getInputStream(context: Context, storageScopeIdentifier: StorageScope.Identifier, path: String?): InputStream? {
-			val storageScope = storageScopeIdentifier.identifyStorageScope(path)
-			return try {
-				path?.let {
-					DataAccess.getInputStream(storageScope, context, path)
-				}
-			} catch (e: Exception) {
-				null
-			}
-		}
 
 		internal fun fileExists(context: Context, storageScopeIdentifier: StorageScope.Identifier, path: String?): Boolean {
 			val storageScope = storageScopeIdentifier.identifyStorageScope(path)
@@ -107,55 +92,35 @@ class FileAccessHandler(val context: Context) {
 		}
 	}
 
-	internal val storageScopeIdentifier = StorageScope.Identifier(context)
+	private val storageScopeIdentifier = StorageScope.Identifier(context)
 	private val files = SparseArray<DataAccess>()
 	private var lastFileId = STARTING_FILE_ID
 
 	private fun hasFileId(fileId: Int) = files.indexOfKey(fileId) >= 0
 
-	fun canAccess(filePath: String?): Boolean {
-		return storageScopeIdentifier.canAccess(filePath)
-	}
-
-	/**
-	 * Returns a positive (> 0) file id when the operation succeeds.
-	 * Otherwise, returns a negative value of [Error].
-	 */
 	fun fileOpen(path: String?, modeFlags: Int): Int {
-		val (fileError, fileId) = fileOpen(path, FileAccessFlags.fromNativeModeFlags(modeFlags))
-		return if (fileError == Error.OK) {
-			fileId
-		} else {
-			// Return the negative of the [Error#toNativeValue()] value to differentiate from the
-			// positive file id.
-			-fileError.toNativeValue()
-		}
+		val accessFlag = FileAccessFlags.fromNativeModeFlags(modeFlags) ?: return INVALID_FILE_ID
+		return fileOpen(path, accessFlag)
 	}
 
-	internal fun fileOpen(path: String?, accessFlag: FileAccessFlags?): Pair<Error, Int> {
-		if (accessFlag == null) {
-			return FILE_OPEN_FAILED
-		}
-
+	internal fun fileOpen(path: String?, accessFlag: FileAccessFlags): Int {
 		val storageScope = storageScopeIdentifier.identifyStorageScope(path)
 		if (storageScope == StorageScope.UNKNOWN) {
-			return FILE_OPEN_FAILED
+			return INVALID_FILE_ID
 		}
 
 		return try {
 			path?.let {
-				val dataAccess = DataAccess.generateDataAccess(storageScope, context, it, accessFlag) ?: return FILE_OPEN_FAILED
+				val dataAccess = DataAccess.generateDataAccess(storageScope, context, it, accessFlag) ?: return INVALID_FILE_ID
 
 				files.put(++lastFileId, dataAccess)
-				Pair(Error.OK, lastFileId)
-			} ?: FILE_OPEN_FAILED
+				lastFileId
+			} ?: INVALID_FILE_ID
 		} catch (e: FileNotFoundException) {
-			Pair(Error.ERR_FILE_NOT_FOUND, INVALID_FILE_ID)
-		} catch (e: UnsupportedOperationException) {
-			Pair(Error.ERR_UNAVAILABLE, INVALID_FILE_ID)
+			FileErrors.FILE_NOT_FOUND.nativeValue
 		} catch (e: Exception) {
 			Log.w(TAG, "Error while opening $path", e)
-			FILE_OPEN_FAILED
+			INVALID_FILE_ID
 		}
 	}
 
@@ -207,10 +172,6 @@ class FileAccessHandler(val context: Context) {
 		files[fileId].flush()
 	}
 
-	fun getInputStream(path: String?) = Companion.getInputStream(context, storageScopeIdentifier, path)
-
-	fun renameFile(from: String, to: String) = Companion.renameFile(context, storageScopeIdentifier, from, to)
-
 	fun fileExists(path: String?) = Companion.fileExists(context, storageScopeIdentifier, path)
 
 	fun fileLastModified(filepath: String?): Long {
@@ -230,10 +191,10 @@ class FileAccessHandler(val context: Context) {
 
 	fun fileResize(fileId: Int, length: Long): Int {
 		if (!hasFileId(fileId)) {
-			return Error.FAILED.toNativeValue()
+			return FileErrors.FAILED.nativeValue
 		}
 
-		return files[fileId].resize(length).toNativeValue()
+		return files[fileId].resize(length)
 	}
 
 	fun fileGetPosition(fileId: Int): Long {

@@ -296,7 +296,7 @@ Dictionary GDScriptTextDocument::resolve(const Dictionary &p_params) {
 		params.load(p_params["data"]);
 		symbol = GDScriptLanguageProtocol::get_singleton()->get_workspace()->resolve_symbol(params, item.label, item.kind == lsp::CompletionItemKind::Method || item.kind == lsp::CompletionItemKind::Function);
 
-	} else if (data.is_string()) {
+	} else if (data.get_type() == Variant::STRING) {
 		String query = data;
 
 		Vector<String> param_symbols = query.split(SYMBOL_SEPERATOR, false);
@@ -472,6 +472,8 @@ GDScriptTextDocument::GDScriptTextDocument() {
 void GDScriptTextDocument::sync_script_content(const String &p_path, const String &p_content) {
 	String path = GDScriptLanguageProtocol::get_singleton()->get_workspace()->get_file_path(p_path);
 	GDScriptLanguageProtocol::get_singleton()->get_workspace()->parse_script(path, p_content);
+
+	EditorFileSystem::get_singleton()->update_file(path);
 }
 
 void GDScriptTextDocument::show_native_symbol_in_editor(const String &p_symbol_id) {

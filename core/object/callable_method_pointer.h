@@ -37,8 +37,6 @@
 #include "core/variant/binder_common.h"
 #include "core/variant/callable.h"
 
-#include <type_traits>
-
 class CallableCustomMethodPointerBase : public CallableCustom {
 	uint32_t *comp_ptr = nullptr;
 	uint32_t comp_size;
@@ -79,8 +77,59 @@ public:
 	virtual uint32_t hash() const;
 };
 
-template <typename T, typename R, typename... P>
+template <typename T, typename... P>
 class CallableCustomMethodPointer : public CallableCustomMethodPointerBase {
+	struct Data {
+		T *instance;
+		uint64_t object_id;
+		void (T::*method)(P...);
+	} data;
+
+public:
+	virtual ObjectID get_object() const {
+		if (ObjectDB::get_instance(ObjectID(data.object_id)) == nullptr) {
+			return ObjectID();
+		}
+		return data.instance->get_instance_id();
+	}
+
+	virtual int get_argument_count(bool &r_is_valid) const {
+		r_is_valid = true;
+		return sizeof...(P);
+	}
+
+	virtual void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const {
+		ERR_FAIL_NULL_MSG(ObjectDB::get_instance(ObjectID(data.object_id)), "Invalid Object id '" + uitos(data.object_id) + "', can't call method.");
+		call_with_variant_args(data.instance, data.method, p_arguments, p_argcount, r_call_error);
+	}
+
+	CallableCustomMethodPointer(T *p_instance, void (T::*p_method)(P...)) {
+		memset(&data, 0, sizeof(Data)); // Clear beforehand, may have padding bytes.
+		data.instance = p_instance;
+		data.object_id = p_instance->get_instance_id();
+		data.method = p_method;
+		_setup((uint32_t *)&data, sizeof(Data));
+	}
+};
+
+template <typename T, typename... P>
+Callable create_custom_callable_function_pointer(T *p_instance,
+#ifdef DEBUG_METHODS_ENABLED
+		const char *p_func_text,
+#endif
+		void (T::*p_method)(P...)) {
+	typedef CallableCustomMethodPointer<T, P...> CCMP; // Messes with memnew otherwise.
+	CCMP *ccmp = memnew(CCMP(p_instance, p_method));
+#ifdef DEBUG_METHODS_ENABLED
+	ccmp->set_text(p_func_text + 1); // Try to get rid of the ampersand.
+#endif
+	return Callable(ccmp);
+}
+
+// VERSION WITH RETURN
+
+template <typename T, typename R, typename... P>
+class CallableCustomMethodPointerRet : public CallableCustomMethodPointerBase {
 	struct Data {
 		T *instance;
 		uint64_t object_id;
@@ -103,14 +152,10 @@ public:
 
 	virtual void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const {
 		ERR_FAIL_NULL_MSG(ObjectDB::get_instance(ObjectID(data.object_id)), "Invalid Object id '" + uitos(data.object_id) + "', can't call method.");
-		if constexpr (std::is_same<R, void>::value) {
-			call_with_variant_args(data.instance, data.method, p_arguments, p_argcount, r_call_error);
-		} else {
-			call_with_variant_args_ret(data.instance, data.method, p_arguments, p_argcount, r_return_value, r_call_error);
-		}
+		call_with_variant_args_ret(data.instance, data.method, p_arguments, p_argcount, r_return_value, r_call_error);
 	}
 
-	CallableCustomMethodPointer(T *p_instance, R (T::*p_method)(P...)) {
+	CallableCustomMethodPointerRet(T *p_instance, R (T::*p_method)(P...)) {
 		memset(&data, 0, sizeof(Data)); // Clear beforehand, may have padding bytes.
 		data.instance = p_instance;
 		data.object_id = p_instance->get_instance_id();
@@ -119,27 +164,13 @@ public:
 	}
 };
 
-template <typename T, typename... P>
-Callable create_custom_callable_function_pointer(T *p_instance,
-#ifdef DEBUG_METHODS_ENABLED
-		const char *p_func_text,
-#endif
-		void (T::*p_method)(P...)) {
-	typedef CallableCustomMethodPointer<T, void, P...> CCMP; // Messes with memnew otherwise.
-	CCMP *ccmp = memnew(CCMP(p_instance, p_method));
-#ifdef DEBUG_METHODS_ENABLED
-	ccmp->set_text(p_func_text + 1); // Try to get rid of the ampersand.
-#endif
-	return Callable(ccmp);
-}
-
 template <typename T, typename R, typename... P>
 Callable create_custom_callable_function_pointer(T *p_instance,
 #ifdef DEBUG_METHODS_ENABLED
 		const char *p_func_text,
 #endif
 		R (T::*p_method)(P...)) {
-	typedef CallableCustomMethodPointer<T, R, P...> CCMP; // Messes with memnew otherwise.
+	typedef CallableCustomMethodPointerRet<T, R, P...> CCMP; // Messes with memnew otherwise.
 	CCMP *ccmp = memnew(CCMP(p_instance, p_method));
 #ifdef DEBUG_METHODS_ENABLED
 	ccmp->set_text(p_func_text + 1); // Try to get rid of the ampersand.
@@ -147,10 +178,10 @@ Callable create_custom_callable_function_pointer(T *p_instance,
 	return Callable(ccmp);
 }
 
-// CONST VERSION
+// CONST VERSION WITH RETURN
 
 template <typename T, typename R, typename... P>
-class CallableCustomMethodPointerC : public CallableCustomMethodPointerBase {
+class CallableCustomMethodPointerRetC : public CallableCustomMethodPointerBase {
 	struct Data {
 		T *instance;
 		uint64_t object_id;
@@ -173,14 +204,10 @@ public:
 
 	virtual void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const override {
 		ERR_FAIL_NULL_MSG(ObjectDB::get_instance(ObjectID(data.object_id)), "Invalid Object id '" + uitos(data.object_id) + "', can't call method.");
-		if constexpr (std::is_same<R, void>::value) {
-			call_with_variant_argsc(data.instance, data.method, p_arguments, p_argcount, r_call_error);
-		} else {
-			call_with_variant_args_retc(data.instance, data.method, p_arguments, p_argcount, r_return_value, r_call_error);
-		}
+		call_with_variant_args_retc(data.instance, data.method, p_arguments, p_argcount, r_return_value, r_call_error);
 	}
 
-	CallableCustomMethodPointerC(T *p_instance, R (T::*p_method)(P...) const) {
+	CallableCustomMethodPointerRetC(T *p_instance, R (T::*p_method)(P...) const) {
 		memset(&data, 0, sizeof(Data)); // Clear beforehand, may have padding bytes.
 		data.instance = p_instance;
 		data.object_id = p_instance->get_instance_id();
@@ -189,27 +216,13 @@ public:
 	}
 };
 
-template <typename T, typename... P>
-Callable create_custom_callable_function_pointer(T *p_instance,
-#ifdef DEBUG_METHODS_ENABLED
-		const char *p_func_text,
-#endif
-		void (T::*p_method)(P...) const) {
-	typedef CallableCustomMethodPointerC<T, void, P...> CCMP; // Messes with memnew otherwise.
-	CCMP *ccmp = memnew(CCMP(p_instance, p_method));
-#ifdef DEBUG_METHODS_ENABLED
-	ccmp->set_text(p_func_text + 1); // Try to get rid of the ampersand.
-#endif
-	return Callable(ccmp);
-}
-
 template <typename T, typename R, typename... P>
 Callable create_custom_callable_function_pointer(T *p_instance,
 #ifdef DEBUG_METHODS_ENABLED
 		const char *p_func_text,
 #endif
 		R (T::*p_method)(P...) const) {
-	typedef CallableCustomMethodPointerC<T, R, P...> CCMP; // Messes with memnew otherwise.
+	typedef CallableCustomMethodPointerRetC<T, R, P...> CCMP; // Messes with memnew otherwise.
 	CCMP *ccmp = memnew(CCMP(p_instance, p_method));
 #ifdef DEBUG_METHODS_ENABLED
 	ccmp->set_text(p_func_text + 1); // Try to get rid of the ampersand.
@@ -225,8 +238,54 @@ Callable create_custom_callable_function_pointer(T *p_instance,
 
 // STATIC VERSIONS
 
-template <typename R, typename... P>
+template <typename... P>
 class CallableCustomStaticMethodPointer : public CallableCustomMethodPointerBase {
+	struct Data {
+		void (*method)(P...);
+	} data;
+
+public:
+	virtual bool is_valid() const override {
+		return true;
+	}
+
+	virtual ObjectID get_object() const override {
+		return ObjectID();
+	}
+
+	virtual int get_argument_count(bool &r_is_valid) const override {
+		r_is_valid = true;
+		return sizeof...(P);
+	}
+
+	virtual void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const override {
+		call_with_variant_args_static_ret(data.method, p_arguments, p_argcount, r_return_value, r_call_error);
+		r_return_value = Variant();
+	}
+
+	CallableCustomStaticMethodPointer(void (*p_method)(P...)) {
+		memset(&data, 0, sizeof(Data)); // Clear beforehand, may have padding bytes.
+		data.method = p_method;
+		_setup((uint32_t *)&data, sizeof(Data));
+	}
+};
+
+template <typename T, typename... P>
+Callable create_custom_callable_static_function_pointer(
+#ifdef DEBUG_METHODS_ENABLED
+		const char *p_func_text,
+#endif
+		void (*p_method)(P...)) {
+	typedef CallableCustomStaticMethodPointer<P...> CCMP; // Messes with memnew otherwise.
+	CCMP *ccmp = memnew(CCMP(p_method));
+#ifdef DEBUG_METHODS_ENABLED
+	ccmp->set_text(p_func_text + 1); // Try to get rid of the ampersand.
+#endif
+	return Callable(ccmp);
+}
+
+template <typename R, typename... P>
+class CallableCustomStaticMethodPointerRet : public CallableCustomMethodPointerBase {
 	struct Data {
 		R(*method)
 		(P...);
@@ -247,33 +306,15 @@ public:
 	}
 
 	virtual void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const override {
-		if constexpr (std::is_same<R, void>::value) {
-			call_with_variant_args_static(data.method, p_arguments, p_argcount, r_call_error);
-		} else {
-			call_with_variant_args_static_ret(data.method, p_arguments, p_argcount, r_return_value, r_call_error);
-		}
+		call_with_variant_args_static_ret(data.method, p_arguments, p_argcount, r_return_value, r_call_error);
 	}
 
-	CallableCustomStaticMethodPointer(R (*p_method)(P...)) {
+	CallableCustomStaticMethodPointerRet(R (*p_method)(P...)) {
 		memset(&data, 0, sizeof(Data)); // Clear beforehand, may have padding bytes.
 		data.method = p_method;
 		_setup((uint32_t *)&data, sizeof(Data));
 	}
 };
-
-template <typename... P>
-Callable create_custom_callable_static_function_pointer(
-#ifdef DEBUG_METHODS_ENABLED
-		const char *p_func_text,
-#endif
-		void (*p_method)(P...)) {
-	typedef CallableCustomStaticMethodPointer<void, P...> CCMP; // Messes with memnew otherwise.
-	CCMP *ccmp = memnew(CCMP(p_method));
-#ifdef DEBUG_METHODS_ENABLED
-	ccmp->set_text(p_func_text + 1); // Try to get rid of the ampersand.
-#endif
-	return Callable(ccmp);
-}
 
 template <typename R, typename... P>
 Callable create_custom_callable_static_function_pointer(
@@ -281,7 +322,7 @@ Callable create_custom_callable_static_function_pointer(
 		const char *p_func_text,
 #endif
 		R (*p_method)(P...)) {
-	typedef CallableCustomStaticMethodPointer<R, P...> CCMP; // Messes with memnew otherwise.
+	typedef CallableCustomStaticMethodPointerRet<R, P...> CCMP; // Messes with memnew otherwise.
 	CCMP *ccmp = memnew(CCMP(p_method));
 #ifdef DEBUG_METHODS_ENABLED
 	ccmp->set_text(p_func_text + 1); // Try to get rid of the ampersand.

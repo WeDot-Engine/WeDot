@@ -37,7 +37,6 @@
 #include "core/os/keyboard.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/editor_feature_profile.h"
-#include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
 #include "editor/editor_quick_open.h"
@@ -51,7 +50,6 @@
 #include "editor/node_dock.h"
 #include "editor/plugins/animation_player_editor_plugin.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
-#include "editor/plugins/editor_context_menu_plugin.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor/reparent_dialog.h"
@@ -215,12 +213,7 @@ void SceneTreeDock::shortcut_input(const Ref<InputEvent> &p_event) {
 	} else if (ED_IS_SHORTCUT("scene_tree/delete", p_event)) {
 		_tool_selected(TOOL_ERASE);
 	} else {
-		Callable custom_callback = EditorContextMenuPluginManager::get_singleton()->match_custom_shortcut(EditorContextMenuPlugin::CONTEXT_SLOT_SCENE_TREE, p_event);
-		if (custom_callback.is_valid()) {
-			EditorContextMenuPluginManager::get_singleton()->invoke_callback(custom_callback, _get_selection_array());
-		} else {
-			return;
-		}
+		return;
 	}
 
 	// Tool selection was successful, accept the event to stop propagation.
@@ -744,14 +737,6 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				if (existing != empty) {
 					undo_redo->add_do_method(n, "set_script", empty);
 					undo_redo->add_undo_method(n, "set_script", existing);
-
-					List<PropertyInfo> properties;
-					n->get_property_list(&properties);
-					for (const PropertyInfo &property : properties) {
-						if (property.usage & (PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_EDITOR)) {
-							undo_redo->add_undo_property(n, property.name, n->get(property.name));
-						}
-					}
 				}
 			}
 
@@ -1207,7 +1192,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 				ScriptEditor::get_singleton()->goto_help("class_name:" + class_name);
 			}
-			EditorNode::get_singleton()->get_editor_main_screen()->select(EditorMainScreen::EDITOR_SCRIPT);
+			EditorNode::get_singleton()->set_visible_editor(EditorNode::EDITOR_SCRIPT);
 		} break;
 		case TOOL_AUTO_EXPAND: {
 			scene_tree->set_auto_expand_selected(!EDITOR_GET("docks/scene_tree/auto_expand_to_selected"), true);
@@ -1248,10 +1233,6 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 		} break;
 		case TOOL_SCENE_USE_PLACEHOLDER: {
 			if (!profile_allow_editing) {
-				break;
-			}
-
-			if (!_validate_no_foreign()) {
 				break;
 			}
 
@@ -1501,11 +1482,6 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 		} break;
 
 		default: {
-			if (p_tool >= EditorContextMenuPlugin::BASE_ID) {
-				EditorContextMenuPluginManager::get_singleton()->activate_custom_option(EditorContextMenuPlugin::CONTEXT_SLOT_SCENE_TREE, p_tool, _get_selection_array());
-				break;
-			}
-
 			_filter_option_selected(p_tool);
 
 			if (p_tool >= EDIT_SUBRESOURCE_BASE) {
@@ -1584,7 +1560,7 @@ void SceneTreeDock::_notification(int p_what) {
 			node_shortcuts_toggle->set_tooltip_text(TTR("Toggle the display of favorite nodes."));
 			node_shortcuts_toggle->set_pressed(EDITOR_GET("_use_favorites_root_selection"));
 			node_shortcuts_toggle->set_anchors_and_offsets_preset(Control::PRESET_CENTER_RIGHT);
-			node_shortcuts_toggle->connect(SceneStringName(pressed), callable_mp(this, &SceneTreeDock::_update_create_root_dialog).bind(false));
+			node_shortcuts_toggle->connect(SceneStringName(pressed), callable_mp(this, &SceneTreeDock::_update_create_root_dialog));
 			top_row->add_child(node_shortcuts_toggle);
 
 			create_root_dialog->add_child(top_row);
@@ -1634,7 +1610,7 @@ void SceneTreeDock::_notification(int p_what) {
 			button_clipboard->set_icon(get_editor_theme_icon(SNAME("ActionPaste")));
 			button_clipboard->connect(SceneStringName(pressed), callable_mp(this, &SceneTreeDock::_tool_selected).bind(TOOL_PASTE, false));
 
-			_update_create_root_dialog(true);
+			_update_create_root_dialog();
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
@@ -3374,18 +3350,6 @@ void SceneTreeDock::_normalize_drop(Node *&to_node, int &to_pos, int p_type) {
 	}
 }
 
-Array SceneTreeDock::_get_selection_array() {
-	List<Node *> selection = editor_selection->get_selected_node_list();
-	TypedArray<Node> array;
-	array.resize(selection.size());
-
-	int i = 0;
-	for (const Node *E : selection) {
-		array[i++] = E;
-	}
-	return array;
-}
-
 void SceneTreeDock::_files_dropped(const Vector<String> &p_files, NodePath p_to, int p_type) {
 	Node *node = get_node(p_to);
 	ERR_FAIL_NULL(node);
@@ -3732,7 +3696,7 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 	if (selection.size() == 1) {
 		bool is_external = (!selection.front()->get()->get_scene_file_path().is_empty());
 		if (is_external) {
-			bool is_inherited = selection.front()->get()->get_scene_inherited_state().is_valid();
+			bool is_inherited = selection.front()->get()->get_scene_inherited_state() != nullptr;
 			bool is_top_level = selection.front()->get()->get_owner() == nullptr;
 			if (is_inherited && is_top_level) {
 				menu->add_separator();
@@ -3779,15 +3743,6 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 		menu->add_separator();
 		menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Remove")), ED_GET_SHORTCUT("scene_tree/delete"), TOOL_ERASE);
 	}
-
-	Vector<String> p_paths;
-	Node *root = EditorNode::get_singleton()->get_edited_scene();
-	for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
-		String node_path = root->get_path().rel_path_to(E->get()->get_path());
-		p_paths.push_back(node_path);
-	}
-	EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(menu, EditorContextMenuPlugin::CONTEXT_SLOT_SCENE_TREE, p_paths);
-
 	menu->reset_size();
 	menu->set_position(p_menu_pos);
 	menu->popup();
@@ -4187,12 +4142,9 @@ void SceneTreeDock::_local_tree_selected() {
 	edit_local->set_pressed(true);
 }
 
-void SceneTreeDock::_update_create_root_dialog(bool p_initializing) {
-	if (!p_initializing) {
-		EditorSettings::get_singleton()->set_setting("_use_favorites_root_selection", node_shortcuts_toggle->is_pressed());
-		EditorSettings::get_singleton()->save();
-	}
-
+void SceneTreeDock::_update_create_root_dialog() {
+	EditorSettings::get_singleton()->set_setting("_use_favorites_root_selection", node_shortcuts_toggle->is_pressed());
+	EditorSettings::get_singleton()->save();
 	if (node_shortcuts_toggle->is_pressed()) {
 		for (int i = 0; i < favorite_node_shortcuts->get_child_count(); i++) {
 			favorite_node_shortcuts->get_child(i)->queue_free();
@@ -4617,7 +4569,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	create_dialog->set_base_type("Node");
 	add_child(create_dialog);
 	create_dialog->connect("create", callable_mp(this, &SceneTreeDock::_create));
-	create_dialog->connect("favorites_updated", callable_mp(this, &SceneTreeDock::_update_create_root_dialog).bind(false));
+	create_dialog->connect("favorites_updated", callable_mp(this, &SceneTreeDock::_update_create_root_dialog));
 
 #ifdef MODULE_REGEX_ENABLED
 	rename_dialog = memnew(RenameDialog(scene_tree));
@@ -4691,6 +4643,9 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	set_process_input(true);
 	set_process(true);
 
+	EDITOR_DEF("interface/editors/show_scene_tree_root_selection", true);
+	EDITOR_DEF("interface/editors/derive_script_globals_by_name", true);
+	EDITOR_DEF("docks/scene_tree/ask_before_deleting_related_animation_tracks", true);
 	EDITOR_DEF("_use_favorites_root_selection", false);
 
 	Resource::_update_configuration_warning = _update_configuration_warning;

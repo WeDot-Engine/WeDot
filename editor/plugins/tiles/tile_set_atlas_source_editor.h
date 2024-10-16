@@ -177,7 +177,7 @@ private:
 
 		DRAG_TYPE_MAY_POPUP_MENU,
 
-		// WARNING: Keep in this order.
+		// Warning: keep in this order.
 		DRAG_TYPE_RESIZE_TOP_LEFT,
 		DRAG_TYPE_RESIZE_TOP,
 		DRAG_TYPE_RESIZE_TOP_RIGHT,

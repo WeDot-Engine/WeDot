@@ -85,7 +85,7 @@ public:
 	virtual Error poll() = 0;
 	virtual void close() = 0;
 
-	static WebRTCPeerConnection *create(bool p_notify_postinitialize = true);
+	static WebRTCPeerConnection *create();
 
 	WebRTCPeerConnection();
 	~WebRTCPeerConnection();

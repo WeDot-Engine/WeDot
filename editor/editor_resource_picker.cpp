@@ -286,22 +286,20 @@ void EditorResourcePicker::_update_menu_items() {
 
 	// Add options to convert existing resource to another type of resource.
 	if (is_editable() && edited_resource.is_valid()) {
-		Vector<Ref<EditorResourceConversionPlugin>> conversions = EditorNode::get_singleton()->find_resource_conversion_plugin_for_resource(edited_resource);
-		if (!conversions.is_empty()) {
+		Vector<Ref<EditorResourceConversionPlugin>> conversions = EditorNode::get_singleton()->find_resource_conversion_plugin(edited_resource);
+		if (conversions.size()) {
 			edit_menu->add_separator();
 		}
-		int relative_id = 0;
-		for (const Ref<EditorResourceConversionPlugin> &conversion : conversions) {
-			String what = conversion->converts_to();
+		for (int i = 0; i < conversions.size(); i++) {
+			String what = conversions[i]->converts_to();
 			Ref<Texture2D> icon;
 			if (has_theme_icon(what, EditorStringName(EditorIcons))) {
 				icon = get_editor_theme_icon(what);
 			} else {
-				icon = get_editor_theme_icon(SNAME("Object"));
+				icon = get_theme_icon(what, SNAME("Resource"));
 			}
 
-			edit_menu->add_icon_item(icon, vformat(TTR("Convert to %s"), what), CONVERT_BASE_ID + relative_id);
-			relative_id++;
+			edit_menu->add_icon_item(icon, vformat(TTR("Convert to %s"), what), CONVERT_BASE_ID + i);
 		}
 	}
 }
@@ -453,7 +451,7 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 
 			if (p_which >= CONVERT_BASE_ID) {
 				int to_type = p_which - CONVERT_BASE_ID;
-				Vector<Ref<EditorResourceConversionPlugin>> conversions = EditorNode::get_singleton()->find_resource_conversion_plugin_for_resource(edited_resource);
+				Vector<Ref<EditorResourceConversionPlugin>> conversions = EditorNode::get_singleton()->find_resource_conversion_plugin(edited_resource);
 				ERR_FAIL_INDEX(to_type, conversions.size());
 
 				edited_resource = conversions[to_type]->convert(edited_resource);
@@ -631,9 +629,9 @@ void EditorResourcePicker::_ensure_allowed_types() const {
 		const String base = allowed_types[i].strip_edges();
 		if (base == "BaseMaterial3D") {
 			allowed_types_with_convert.insert("Texture2D");
-		} else if (ClassDB::is_parent_class("ShaderMaterial", base)) {
+		} else if (base == "ShaderMaterial") {
 			allowed_types_with_convert.insert("Shader");
-		} else if (ClassDB::is_parent_class("ImageTexture", base)) {
+		} else if (base == "Texture2D") {
 			allowed_types_with_convert.insert("Image");
 		}
 	}

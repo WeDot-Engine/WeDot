@@ -923,10 +923,7 @@ public:
 	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
 		bool valid = true;
 		String result = do_mod(*VariantGetInternalPtr<S>::get_ptr(left), &valid);
-		if (unlikely(!valid)) {
-			*VariantGetInternalPtr<String>::get_ptr(r_ret) = *VariantGetInternalPtr<S>::get_ptr(left);
-			ERR_FAIL_MSG(vformat("String formatting error: %s.", result));
-		}
+		ERR_FAIL_COND_MSG(!valid, result);
 		*VariantGetInternalPtr<String>::get_ptr(r_ret) = result;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
@@ -951,10 +948,7 @@ public:
 	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
 		bool valid = true;
 		String result = do_mod(*VariantGetInternalPtr<S>::get_ptr(left), *VariantGetInternalPtr<Array>::get_ptr(right), &valid);
-		if (unlikely(!valid)) {
-			*VariantGetInternalPtr<String>::get_ptr(r_ret) = *VariantGetInternalPtr<S>::get_ptr(left);
-			ERR_FAIL_MSG(vformat("String formatting error: %s.", result));
-		}
+		ERR_FAIL_COND_MSG(!valid, result);
 		*VariantGetInternalPtr<String>::get_ptr(r_ret) = result;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
@@ -982,10 +976,7 @@ public:
 	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
 		bool valid = true;
 		String result = do_mod(*VariantGetInternalPtr<S>::get_ptr(left), right->get_validated_object(), &valid);
-		if (unlikely(!valid)) {
-			*VariantGetInternalPtr<String>::get_ptr(r_ret) = *VariantGetInternalPtr<S>::get_ptr(left);
-			ERR_FAIL_MSG(vformat("String formatting error: %s.", result));
-		}
+		ERR_FAIL_COND_MSG(!valid, result);
 		*VariantGetInternalPtr<String>::get_ptr(r_ret) = result;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
@@ -1012,10 +1003,7 @@ public:
 	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
 		bool valid = true;
 		String result = do_mod(*VariantGetInternalPtr<S>::get_ptr(left), *VariantGetInternalPtr<T>::get_ptr(right), &valid);
-		if (unlikely(!valid)) {
-			*VariantGetInternalPtr<String>::get_ptr(r_ret) = *VariantGetInternalPtr<S>::get_ptr(left);
-			ERR_FAIL_MSG(vformat("String formatting error: %s.", result));
-		}
+		ERR_FAIL_COND_MSG(!valid, result);
 		*VariantGetInternalPtr<String>::get_ptr(r_ret) = result;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
@@ -1504,10 +1492,7 @@ public:
 	}
 	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
 		Object *l = right->get_validated_object();
-		if (unlikely(!l)) {
-			*VariantGetInternalPtr<bool>::get_ptr(r_ret) = false;
-			ERR_FAIL_MSG("Invalid base object for 'in'.");
-		}
+		ERR_FAIL_NULL(l);
 		const String &a = *VariantGetInternalPtr<String>::get_ptr(left);
 
 		bool valid;
@@ -1541,10 +1526,7 @@ public:
 	}
 	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
 		Object *l = right->get_validated_object();
-		if (unlikely(!l)) {
-			*VariantGetInternalPtr<bool>::get_ptr(r_ret) = false;
-			ERR_FAIL_MSG("Invalid base object for 'in'.");
-		}
+		ERR_FAIL_NULL(l);
 		const StringName &a = *VariantGetInternalPtr<StringName>::get_ptr(left);
 
 		bool valid;

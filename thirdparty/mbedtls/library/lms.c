@@ -229,10 +229,6 @@ void mbedtls_lms_public_init(mbedtls_lms_public_t *ctx)
 
 void mbedtls_lms_public_free(mbedtls_lms_public_t *ctx)
 {
-    if (ctx == NULL) {
-        return;
-    }
-
     mbedtls_platform_zeroize(ctx, sizeof(*ctx));
 }
 
@@ -532,10 +528,6 @@ void mbedtls_lms_private_init(mbedtls_lms_private_t *ctx)
 
 void mbedtls_lms_private_free(mbedtls_lms_private_t *ctx)
 {
-    if (ctx == NULL) {
-        return;
-    }
-
     unsigned int idx;
 
     if (ctx->have_private_key) {

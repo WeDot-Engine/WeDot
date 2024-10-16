@@ -40,6 +40,7 @@ public:
 	OpenXRSelectRuntime();
 
 protected:
+	static void _bind_methods();
 	void _notification(int p_notification);
 
 private:

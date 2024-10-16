@@ -60,7 +60,7 @@ const char *mbedtls_ssl_named_group_to_str( uint16_t in )
         return "ffdhe8192";
     };
 
-    return "UNKNOWN";
+    return "UNKOWN";
 }
 const char *mbedtls_ssl_sig_alg_to_str( uint16_t in )
 {

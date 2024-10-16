@@ -132,7 +132,6 @@ SceneStringNames::SceneStringNames() {
 
 	pressed = StaticCString::create("pressed");
 	id_pressed = StaticCString::create("id_pressed");
-	toggled = StaticCString::create("toggled");
 
 	panel = StaticCString::create("panel");
 
@@ -141,6 +140,5 @@ SceneStringNames::SceneStringNames() {
 	confirmed = StaticCString::create("confirmed");
 
 	text_changed = StaticCString::create("text_changed");
-	text_submitted = StaticCString::create("text_submitted");
 	value_changed = StaticCString::create("value_changed");
 }

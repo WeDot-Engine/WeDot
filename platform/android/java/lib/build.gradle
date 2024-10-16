@@ -51,7 +51,7 @@ android {
         }
     }
 
-    flavorDimensions = ["products"]
+    flavorDimensions "products"
     productFlavors {
         editor {}
         template {}
@@ -104,7 +104,7 @@ android {
         }
 
         boolean devBuild = buildType == "dev"
-        boolean debugSymbols = devBuild
+        boolean debugSymbols = devBuild || isAndroidStudio()
         boolean runTests = devBuild
         boolean productionBuild = !devBuild
         boolean storeRelease = buildType == "release"

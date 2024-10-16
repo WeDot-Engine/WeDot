@@ -218,6 +218,9 @@ void ShaderFileEditor::_editor_settings_changed() {
 	}
 }
 
+void ShaderFileEditor::_bind_methods() {
+}
+
 void ShaderFileEditor::edit(const Ref<RDShaderFile> &p_shader) {
 	if (p_shader.is_null()) {
 		if (shader_file.is_valid()) {

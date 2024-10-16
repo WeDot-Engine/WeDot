@@ -76,7 +76,6 @@ void FileDialog::popup(const Rect2i &p_rect) {
 #ifdef TOOLS_ENABLED
 	if (is_part_of_edited_scene()) {
 		ConfirmationDialog::popup(p_rect);
-		return;
 	}
 #endif
 
@@ -1145,7 +1144,7 @@ void FileDialog::_update_option_controls() {
 			CheckBox *cb = memnew(CheckBox);
 			cb->set_pressed(opt.default_idx);
 			grid_options->add_child(cb);
-			cb->connect(SceneStringName(toggled), callable_mp(this, &FileDialog::_option_changed_checkbox_toggled).bind(opt.name));
+			cb->connect("toggled", callable_mp(this, &FileDialog::_option_changed_checkbox_toggled).bind(opt.name));
 			selected_options[opt.name] = (bool)opt.default_idx;
 		} else {
 			OptionButton *ob = memnew(OptionButton);
@@ -1381,7 +1380,7 @@ void FileDialog::set_use_native_dialog(bool p_native) {
 #endif
 
 	// Replace the built-in dialog with the native one if it's currently visible.
-	if (is_inside_tree() && is_visible() && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_DIALOG_FILE) && (use_native_dialog || OS::get_singleton()->is_sandboxed())) {
+	if (is_visible() && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_DIALOG_FILE) && (use_native_dialog || OS::get_singleton()->is_sandboxed())) {
 		ConfirmationDialog::set_visible(false);
 		_native_popup();
 	}
@@ -1443,7 +1442,7 @@ FileDialog::FileDialog() {
 	show_hidden->set_toggle_mode(true);
 	show_hidden->set_pressed(is_showing_hidden_files());
 	show_hidden->set_tooltip_text(ETR("Toggle the visibility of hidden files."));
-	show_hidden->connect(SceneStringName(toggled), callable_mp(this, &FileDialog::set_show_hidden_files));
+	show_hidden->connect("toggled", callable_mp(this, &FileDialog::set_show_hidden_files));
 	hbc->add_child(show_hidden);
 
 	shortcuts_container = memnew(HBoxContainer);
@@ -1526,7 +1525,6 @@ FileDialog::FileDialog() {
 	update_dir();
 
 	set_hide_on_ok(false);
-	set_size(Size2(640, 360));
 
 	if (register_func) {
 		register_func(this);

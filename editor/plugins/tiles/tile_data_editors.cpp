@@ -523,21 +523,6 @@ void GenericTilePolygonEditor::_base_control_gui_input(Ref<InputEvent> p_event) 
 	xform.set_origin(base_control->get_size() / 2 + panning);
 	xform.set_scale(Vector2(editor_zoom_widget->get_zoom(), editor_zoom_widget->get_zoom()));
 
-	Ref<InputEventPanGesture> pan_gesture = p_event;
-	if (pan_gesture.is_valid()) {
-		panning += pan_gesture->get_delta() * 8;
-		drag_last_pos = Vector2();
-		button_center_view->set_disabled(panning.is_zero_approx());
-		accept_event();
-	}
-
-	Ref<InputEventMagnifyGesture> magnify_gesture = p_event;
-	if (magnify_gesture.is_valid()) {
-		editor_zoom_widget->set_zoom(editor_zoom_widget->get_zoom() * magnify_gesture->get_factor());
-		_zoom_changed();
-		accept_event();
-	}
-
 	Ref<InputEventMouseMotion> mm = p_event;
 	if (mm.is_valid()) {
 		if (drag_type == DRAG_TYPE_DRAG_POINT) {
@@ -917,7 +902,7 @@ GenericTilePolygonEditor::GenericTilePolygonEditor() {
 	button_expand->set_toggle_mode(true);
 	button_expand->set_pressed(false);
 	button_expand->set_tooltip_text(TTR("Expand editor"));
-	button_expand->connect(SceneStringName(toggled), callable_mp(this, &GenericTilePolygonEditor::_toggle_expand));
+	button_expand->connect("toggled", callable_mp(this, &GenericTilePolygonEditor::_toggle_expand));
 	toolbar->add_child(button_expand);
 
 	toolbar->add_child(memnew(VSeparator));
@@ -1097,7 +1082,7 @@ void TileDataDefaultEditor::forward_draw_over_atlas(TileAtlasView *p_tile_atlas_
 	}
 };
 
-void TileDataDefaultEditor::forward_draw_over_alternatives(TileAtlasView *p_tile_atlas_view, TileSetAtlasSource *p_tile_set_atlas_source, CanvasItem *p_canvas_item, Transform2D p_transform) {
+void TileDataDefaultEditor::forward_draw_over_alternatives(TileAtlasView *p_tile_atlas_view, TileSetAtlasSource *p_tile_set_atlas_source, CanvasItem *p_canvas_item, Transform2D p_transform){
 
 };
 
@@ -1482,36 +1467,30 @@ void TileDataOcclusionShapeEditor::draw_over_tile(CanvasItem *p_canvas_item, Tra
 	debug_occlusion_color.push_back(color);
 
 	RenderingServer::get_singleton()->canvas_item_add_set_transform(p_canvas_item->get_canvas_item(), p_transform);
-	for (int i = 0; i < tile_data->get_occluder_polygons_count(occlusion_layer); i++) {
-		Ref<OccluderPolygon2D> occluder = tile_data->get_occluder_polygon(occlusion_layer, i);
-		if (occluder.is_valid() && occluder->get_polygon().size() >= 3) {
-			p_canvas_item->draw_polygon(Variant(occluder->get_polygon()), debug_occlusion_color);
-		}
+	Ref<OccluderPolygon2D> occluder = tile_data->get_occluder(occlusion_layer);
+	if (occluder.is_valid() && occluder->get_polygon().size() >= 3) {
+		p_canvas_item->draw_polygon(Variant(occluder->get_polygon()), debug_occlusion_color);
 	}
 	RenderingServer::get_singleton()->canvas_item_add_set_transform(p_canvas_item->get_canvas_item(), Transform2D());
 }
 
 Variant TileDataOcclusionShapeEditor::_get_painted_value() {
-	Array polygons;
-	for (int i = 0; i < polygon_editor->get_polygon_count(); i++) {
-		Ref<OccluderPolygon2D> occluder_polygon;
+	Ref<OccluderPolygon2D> occluder_polygon;
+	if (polygon_editor->get_polygon_count() >= 1) {
 		occluder_polygon.instantiate();
-		occluder_polygon->set_polygon(polygon_editor->get_polygon(i));
-		polygons.push_back(occluder_polygon);
+		occluder_polygon->set_polygon(polygon_editor->get_polygon(0));
 	}
-	return polygons;
+	return occluder_polygon;
 }
 
 void TileDataOcclusionShapeEditor::_set_painted_value(TileSetAtlasSource *p_tile_set_atlas_source, Vector2 p_coords, int p_alternative_tile) {
 	TileData *tile_data = p_tile_set_atlas_source->get_tile_data(p_coords, p_alternative_tile);
 	ERR_FAIL_NULL(tile_data);
 
+	Ref<OccluderPolygon2D> occluder_polygon = tile_data->get_occluder(occlusion_layer);
 	polygon_editor->clear_polygons();
-	for (int i = 0; i < tile_data->get_occluder_polygons_count(occlusion_layer); i++) {
-		Ref<OccluderPolygon2D> occluder_polygon = tile_data->get_occluder_polygon(occlusion_layer, i);
-		if (occluder_polygon.is_valid()) {
-			polygon_editor->add_polygon(occluder_polygon->get_polygon());
-		}
+	if (occluder_polygon.is_valid()) {
+		polygon_editor->add_polygon(occluder_polygon->get_polygon());
 	}
 	polygon_editor->set_background_tile(p_tile_set_atlas_source, p_coords, p_alternative_tile);
 }
@@ -1519,13 +1498,8 @@ void TileDataOcclusionShapeEditor::_set_painted_value(TileSetAtlasSource *p_tile
 void TileDataOcclusionShapeEditor::_set_value(TileSetAtlasSource *p_tile_set_atlas_source, Vector2 p_coords, int p_alternative_tile, const Variant &p_value) {
 	TileData *tile_data = p_tile_set_atlas_source->get_tile_data(p_coords, p_alternative_tile);
 	ERR_FAIL_NULL(tile_data);
-
-	Array polygons = p_value;
-	tile_data->set_occluder_polygons_count(occlusion_layer, polygons.size());
-	for (int i = 0; i < polygons.size(); i++) {
-		Ref<OccluderPolygon2D> occluder_polygon = polygons[i];
-		tile_data->set_occluder_polygon(occlusion_layer, i, occluder_polygon);
-	}
+	Ref<OccluderPolygon2D> occluder_polygon = p_value;
+	tile_data->set_occluder(occlusion_layer, occluder_polygon);
 
 	polygon_editor->set_background_tile(p_tile_set_atlas_source, p_coords, p_alternative_tile);
 }
@@ -1533,11 +1507,7 @@ void TileDataOcclusionShapeEditor::_set_value(TileSetAtlasSource *p_tile_set_atl
 Variant TileDataOcclusionShapeEditor::_get_value(TileSetAtlasSource *p_tile_set_atlas_source, Vector2 p_coords, int p_alternative_tile) {
 	TileData *tile_data = p_tile_set_atlas_source->get_tile_data(p_coords, p_alternative_tile);
 	ERR_FAIL_NULL_V(tile_data, Variant());
-	Array polygons;
-	for (int i = 0; i < tile_data->get_occluder_polygons_count(occlusion_layer); i++) {
-		polygons.push_back(tile_data->get_occluder_polygon(occlusion_layer, i));
-	}
-	return polygons;
+	return tile_data->get_occluder(occlusion_layer);
 }
 
 void TileDataOcclusionShapeEditor::_setup_undo_redo_action(TileSetAtlasSource *p_tile_set_atlas_source, const HashMap<TileMapCell, Variant, TileMapCell> &p_previous_values, const Variant &p_new_value) {
@@ -1563,7 +1533,6 @@ void TileDataOcclusionShapeEditor::_notification(int p_what) {
 
 TileDataOcclusionShapeEditor::TileDataOcclusionShapeEditor() {
 	polygon_editor = memnew(GenericTilePolygonEditor);
-	polygon_editor->set_multiple_polygon_mode(true);
 	add_child(polygon_editor);
 }
 

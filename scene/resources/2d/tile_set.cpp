@@ -3444,8 +3444,7 @@ void TileSet::_compatibility_conversion() {
 							polygon.write[index] = xform.xform(polygon[index] - ctd->region.get_size() / 2.0);
 						}
 						occluder->set_polygon(polygon);
-						tile_data->add_occluder_polygon(0);
-						tile_data->set_occluder_polygon(0, 0, occluder);
+						tile_data->set_occluder(0, occluder);
 					}
 					if (ctd->navigation.is_valid()) {
 						if (get_navigation_layers_count() < 1) {
@@ -3559,8 +3558,7 @@ void TileSet::_compatibility_conversion() {
 									polygon.write[index] = xform.xform(polygon[index] - ctd->region.get_size() / 2.0);
 								}
 								occluder->set_polygon(polygon);
-								tile_data->add_occluder_polygon(0);
-								tile_data->set_occluder_polygon(0, 0, occluder);
+								tile_data->set_occluder(0, occluder);
 							}
 							if (ctd->autotile_navpoly_map.has(coords)) {
 								if (get_navigation_layers_count() < 1) {
@@ -3922,7 +3920,7 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 				int terrain_index = components[1].trim_prefix("terrain_").to_int();
 				ERR_FAIL_COND_V(terrain_index < 0, false);
 				if (components[2] == "name") {
-					ERR_FAIL_COND_V(!p_value.is_string(), false);
+					ERR_FAIL_COND_V(p_value.get_type() != Variant::STRING, false);
 					while (terrain_set_index >= terrain_sets.size()) {
 						add_terrain_set();
 					}
@@ -3960,7 +3958,7 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 			int index = components[0].trim_prefix("custom_data_layer_").to_int();
 			ERR_FAIL_COND_V(index < 0, false);
 			if (components[1] == "name") {
-				ERR_FAIL_COND_V(!p_value.is_string(), false);
+				ERR_FAIL_COND_V(p_value.get_type() != Variant::STRING, false);
 				while (index >= custom_data_layers.size()) {
 					add_custom_data_layer();
 				}
@@ -6222,86 +6220,33 @@ int TileData::get_y_sort_origin() const {
 	return y_sort_origin;
 }
 
-#ifndef DISABLE_DEPRECATED
 void TileData::set_occluder(int p_layer_id, Ref<OccluderPolygon2D> p_occluder_polygon) {
 	ERR_FAIL_INDEX(p_layer_id, occluders.size());
-	if (get_occluder_polygons_count(p_layer_id) == 0) {
-		add_occluder_polygon(p_layer_id);
-	}
-	set_occluder_polygon(p_layer_id, 0, p_occluder_polygon);
+	occluders.write[p_layer_id].occluder = p_occluder_polygon;
+	occluders.write[p_layer_id].transformed_occluders.clear();
 	emit_signal(CoreStringName(changed));
 }
 
 Ref<OccluderPolygon2D> TileData::get_occluder(int p_layer_id, bool p_flip_h, bool p_flip_v, bool p_transpose) const {
 	ERR_FAIL_INDEX_V(p_layer_id, occluders.size(), Ref<OccluderPolygon2D>());
-	if (get_occluder_polygons_count(p_layer_id) == 0) {
-		return Ref<OccluderPolygon2D>();
-	}
-	return get_occluder_polygon(p_layer_id, 0, p_flip_h, p_flip_v, p_transpose);
-}
-#endif // DISABLE_DEPRECATED
-
-void TileData::set_occluder_polygons_count(int p_layer_id, int p_polygons_count) {
-	ERR_FAIL_INDEX(p_layer_id, occluders.size());
-	ERR_FAIL_COND(p_polygons_count < 0);
-	if (p_polygons_count == occluders.write[p_layer_id].polygons.size()) {
-		return;
-	}
-	occluders.write[p_layer_id].polygons.resize(p_polygons_count);
-	notify_property_list_changed();
-	emit_signal(CoreStringName(changed));
-}
-
-int TileData::get_occluder_polygons_count(int p_layer_id) const {
-	ERR_FAIL_INDEX_V(p_layer_id, occluders.size(), 0);
-	return occluders[p_layer_id].polygons.size();
-}
-
-void TileData::add_occluder_polygon(int p_layer_id) {
-	ERR_FAIL_INDEX(p_layer_id, occluders.size());
-	occluders.write[p_layer_id].polygons.push_back(OcclusionLayerTileData::PolygonOccluderTileData());
-	emit_signal(CoreStringName(changed));
-}
-
-void TileData::remove_occluder_polygon(int p_layer_id, int p_polygon_index) {
-	ERR_FAIL_INDEX(p_layer_id, occluders.size());
-	ERR_FAIL_INDEX(p_polygon_index, occluders[p_layer_id].polygons.size());
-	occluders.write[p_layer_id].polygons.remove_at(p_polygon_index);
-	emit_signal(CoreStringName(changed));
-}
-
-void TileData::set_occluder_polygon(int p_layer_id, int p_polygon_index, const Ref<OccluderPolygon2D> &p_occluder_polygon) {
-	ERR_FAIL_INDEX(p_layer_id, occluders.size());
-	ERR_FAIL_INDEX(p_polygon_index, occluders[p_layer_id].polygons.size());
-
-	OcclusionLayerTileData::PolygonOccluderTileData &polygon_occluder_tile_data = occluders.write[p_layer_id].polygons.write[p_polygon_index];
-	polygon_occluder_tile_data.occluder_polygon = p_occluder_polygon;
-	polygon_occluder_tile_data.transformed_polygon_occluders.clear();
-	emit_signal(CoreStringName(changed));
-}
-
-Ref<OccluderPolygon2D> TileData::get_occluder_polygon(int p_layer_id, int p_polygon_index, bool p_flip_h, bool p_flip_v, bool p_transpose) const {
-	ERR_FAIL_INDEX_V(p_layer_id, occluders.size(), Ref<OccluderPolygon2D>());
-	ERR_FAIL_INDEX_V(p_polygon_index, occluders[p_layer_id].polygons.size(), Ref<OccluderPolygon2D>());
 
 	const OcclusionLayerTileData &layer_tile_data = occluders[p_layer_id];
-	const Ref<OccluderPolygon2D> &occluder_polygon = layer_tile_data.polygons[p_polygon_index].occluder_polygon;
 
 	int key = int(p_flip_h) | int(p_flip_v) << 1 | int(p_transpose) << 2;
 	if (key == 0) {
-		return occluder_polygon;
+		return layer_tile_data.occluder;
 	}
 
-	if (occluder_polygon.is_null()) {
+	if (layer_tile_data.occluder.is_null()) {
 		return Ref<OccluderPolygon2D>();
 	}
 
-	HashMap<int, Ref<OccluderPolygon2D>>::Iterator I = layer_tile_data.polygons[p_polygon_index].transformed_polygon_occluders.find(key);
+	HashMap<int, Ref<OccluderPolygon2D>>::Iterator I = layer_tile_data.transformed_occluders.find(key);
 	if (!I) {
 		Ref<OccluderPolygon2D> transformed_polygon;
 		transformed_polygon.instantiate();
-		transformed_polygon->set_polygon(get_transformed_vertices(occluder_polygon->get_polygon(), p_flip_h, p_flip_v, p_transpose));
-		layer_tile_data.polygons[p_polygon_index].transformed_polygon_occluders[key] = transformed_polygon;
+		transformed_polygon->set_polygon(get_transformed_vertices(layer_tile_data.occluder->get_polygon(), p_flip_h, p_flip_v, p_transpose));
+		layer_tile_data.transformed_occluders[key] = transformed_polygon;
 		return transformed_polygon;
 	} else {
 		return I->value;
@@ -6557,18 +6502,17 @@ Ref<NavigationPolygon> TileData::get_navigation_polygon(int p_layer_id, bool p_f
 		transformed_polygon.instantiate();
 
 		PackedVector2Array new_points = get_transformed_vertices(layer_tile_data.navigation_polygon->get_vertices(), p_flip_h, p_flip_v, p_transpose);
+		transformed_polygon->set_vertices(new_points);
 
-		const Vector<Vector<Vector2>> outlines = layer_tile_data.navigation_polygon->get_outlines();
-		int outline_count = outlines.size();
-
-		Vector<Vector<Vector2>> new_outlines;
-		new_outlines.resize(outline_count);
-
-		for (int i = 0; i < outline_count; i++) {
-			new_outlines.write[i] = get_transformed_vertices(outlines[i], p_flip_h, p_flip_v, p_transpose);
+		int num_polygons = layer_tile_data.navigation_polygon->get_polygon_count();
+		for (int i = 0; i < num_polygons; ++i) {
+			transformed_polygon->add_polygon(layer_tile_data.navigation_polygon->get_polygon(i));
 		}
 
-		transformed_polygon->set_data(new_points, layer_tile_data.navigation_polygon->get_polygons(), new_outlines);
+		for (int i = 0; i < layer_tile_data.navigation_polygon->get_outline_count(); i++) {
+			PackedVector2Array new_outline = get_transformed_vertices(layer_tile_data.navigation_polygon->get_outline(i), p_flip_h, p_flip_v, p_transpose);
+			transformed_polygon->add_outline(new_outline);
+		}
 
 		layer_tile_data.transformed_navigation_polygon[key] = transformed_polygon;
 		return transformed_polygon;
@@ -6649,37 +6593,13 @@ bool TileData::_set(const StringName &p_name, const Variant &p_value) {
 #endif
 
 	Vector<String> components = String(p_name).split("/", true, 2);
-	if (components.size() >= 2 && components[0].begins_with("occlusion_layer_") && components[0].trim_prefix("occlusion_layer_").is_valid_int()) {
+
+	if (components.size() == 2 && components[0].begins_with("occlusion_layer_") && components[0].trim_prefix("occlusion_layer_").is_valid_int()) {
 		// Occlusion layers.
 		int layer_index = components[0].trim_prefix("occlusion_layer_").to_int();
 		ERR_FAIL_COND_V(layer_index < 0, false);
-		if (components.size() == 2) {
-			if (components[1] == "polygon") {
-				// Kept for compatibility.
-				Ref<OccluderPolygon2D> polygon = p_value;
-				if (layer_index >= occluders.size()) {
-					if (tile_set) {
-						return false;
-					} else {
-						occluders.resize(layer_index + 1);
-					}
-				}
-				if (get_occluder_polygons_count(layer_index) == 0) {
-					add_occluder_polygon(layer_index);
-				}
-				set_occluder_polygon(layer_index, 0, polygon);
-				return true;
-			} else if (components[1] == "polygons_count") {
-				if (p_value.get_type() != Variant::INT) {
-					return false;
-				}
-				set_occluder_polygons_count(layer_index, p_value);
-				return true;
-			}
-		} else if (components.size() == 3 && components[1].begins_with("polygon_") && components[1].trim_prefix("polygon_").is_valid_int()) {
-			// Polygons.
-			int polygon_index = components[1].trim_prefix("polygon_").to_int();
-			ERR_FAIL_COND_V(polygon_index < 0, false);
+		if (components[1] == "polygon") {
+			Ref<OccluderPolygon2D> polygon = p_value;
 
 			if (layer_index >= occluders.size()) {
 				if (tile_set) {
@@ -6688,16 +6608,8 @@ bool TileData::_set(const StringName &p_name, const Variant &p_value) {
 					occluders.resize(layer_index + 1);
 				}
 			}
-
-			if (polygon_index >= occluders[layer_index].polygons.size()) {
-				occluders.write[layer_index].polygons.resize(polygon_index + 1);
-			}
-
-			if (components[2] == "polygon") {
-				Ref<OccluderPolygon2D> polygon = p_value;
-				set_occluder_polygon(layer_index, polygon_index, polygon);
-				return true;
-			}
+			set_occluder(layer_index, polygon);
+			return true;
 		}
 	} else if (components.size() >= 2 && components[0].begins_with("physics_layer_") && components[0].trim_prefix("physics_layer_").is_valid_int()) {
 		// Physics layers.
@@ -6725,7 +6637,6 @@ bool TileData::_set(const StringName &p_name, const Variant &p_value) {
 				return true;
 			}
 		} else if (components.size() == 3 && components[1].begins_with("polygon_") && components[1].trim_prefix("polygon_").is_valid_int()) {
-			// Polygons.
 			int polygon_index = components[1].trim_prefix("polygon_").to_int();
 			ERR_FAIL_COND_V(polygon_index < 0, false);
 
@@ -6812,36 +6723,16 @@ bool TileData::_get(const StringName &p_name, Variant &r_ret) const {
 	Vector<String> components = String(p_name).split("/", true, 2);
 
 	if (tile_set) {
-		if (components.size() >= 2 && components[0].begins_with("occlusion_layer") && components[0].trim_prefix("occlusion_layer_").is_valid_int()) {
+		if (components.size() == 2 && components[0].begins_with("occlusion_layer") && components[0].trim_prefix("occlusion_layer_").is_valid_int()) {
 			// Occlusion layers.
 			int layer_index = components[0].trim_prefix("occlusion_layer_").to_int();
 			ERR_FAIL_COND_V(layer_index < 0, false);
 			if (layer_index >= occluders.size()) {
 				return false;
 			}
-			if (components.size() == 2) {
-				if (components[1] == "polygon") {
-					// Kept for compatibility.
-					if (occluders[layer_index].polygons.is_empty()) {
-						return false;
-					}
-					r_ret = get_occluder_polygon(layer_index, 0);
-					return true;
-				} else if (components[1] == "polygons_count") {
-					r_ret = get_occluder_polygons_count(layer_index);
-					return true;
-				}
-			} else if (components.size() == 3 && components[1].begins_with("polygon_") && components[1].trim_prefix("polygon_").is_valid_int()) {
-				// Polygons.
-				int polygon_index = components[1].trim_prefix("polygon_").to_int();
-				ERR_FAIL_COND_V(polygon_index < 0, false);
-				if (polygon_index >= occluders[layer_index].polygons.size()) {
-					return false;
-				}
-				if (components[2] == "polygon") {
-					r_ret = get_occluder_polygon(layer_index, polygon_index);
-					return true;
-				}
+			if (components[1] == "polygon") {
+				r_ret = get_occluder(layer_index);
+				return true;
 			}
 		} else if (components.size() >= 2 && components[0].begins_with("physics_layer_") && components[0].trim_prefix("physics_layer_").is_valid_int()) {
 			// Physics layers.
@@ -6921,15 +6812,12 @@ void TileData::_get_property_list(List<PropertyInfo> *p_list) const {
 		// Occlusion layers.
 		p_list->push_back(PropertyInfo(Variant::NIL, GNAME("Rendering", ""), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP));
 		for (int i = 0; i < occluders.size(); i++) {
-			p_list->push_back(PropertyInfo(Variant::INT, vformat("occlusion_layer_%d/%s", i, PNAME("polygons_count")), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR));
-			for (int j = 0; j < occluders[i].polygons.size(); j++) {
-				// occlusion_layer_%d/polygon_%d/polygon
-				property_info = PropertyInfo(Variant::OBJECT, vformat("occlusion_layer_%d/polygon_%d/%s", i, j, PNAME("polygon")), PROPERTY_HINT_RESOURCE_TYPE, "OccluderPolygon2D", PROPERTY_USAGE_DEFAULT);
-				if (occluders[i].polygons[j].occluder_polygon.is_null()) {
-					property_info.usage ^= PROPERTY_USAGE_STORAGE;
-				}
-				p_list->push_back(property_info);
+			// occlusion_layer_%d/polygon
+			property_info = PropertyInfo(Variant::OBJECT, vformat("occlusion_layer_%d/%s", i, PNAME("polygon")), PROPERTY_HINT_RESOURCE_TYPE, "OccluderPolygon2D", PROPERTY_USAGE_DEFAULT);
+			if (occluders[i].occluder.is_null()) {
+				property_info.usage ^= PROPERTY_USAGE_STORAGE;
 			}
+			p_list->push_back(property_info);
 		}
 
 		// Physics layers.
@@ -7034,17 +6922,8 @@ void TileData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_y_sort_origin", "y_sort_origin"), &TileData::set_y_sort_origin);
 	ClassDB::bind_method(D_METHOD("get_y_sort_origin"), &TileData::get_y_sort_origin);
 
-	ClassDB::bind_method(D_METHOD("set_occluder_polygons_count", "layer_id", "polygons_count"), &TileData::set_occluder_polygons_count);
-	ClassDB::bind_method(D_METHOD("get_occluder_polygons_count", "layer_id"), &TileData::get_occluder_polygons_count);
-	ClassDB::bind_method(D_METHOD("add_occluder_polygon", "layer_id"), &TileData::add_occluder_polygon);
-	ClassDB::bind_method(D_METHOD("remove_occluder_polygon", "layer_id", "polygon_index"), &TileData::remove_occluder_polygon);
-	ClassDB::bind_method(D_METHOD("set_occluder_polygon", "layer_id", "polygon_index", "polygon"), &TileData::set_occluder_polygon);
-	ClassDB::bind_method(D_METHOD("get_occluder_polygon", "layer_id", "polygon_index", "flip_h", "flip_v", "transpose"), &TileData::get_occluder_polygon, DEFVAL(false), DEFVAL(false), DEFVAL(false));
-
-#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("set_occluder", "layer_id", "occluder_polygon"), &TileData::set_occluder);
 	ClassDB::bind_method(D_METHOD("get_occluder", "layer_id", "flip_h", "flip_v", "transpose"), &TileData::get_occluder, DEFVAL(false), DEFVAL(false), DEFVAL(false));
-#endif // DISABLE_DEPRECATED
 
 	// Physics.
 	ClassDB::bind_method(D_METHOD("set_constant_linear_velocity", "layer_id", "velocity"), &TileData::set_constant_linear_velocity);

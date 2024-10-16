@@ -43,7 +43,6 @@ import androidx.annotation.Nullable;
 
 import java.lang.reflect.Constructor;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -83,9 +82,6 @@ public final class GodotPluginRegistry {
 	 * Retrieve the full set of loaded plugins.
 	 */
 	public Collection<GodotPlugin> getAllPlugins() {
-		if (registry.isEmpty()) {
-			return Collections.emptyList();
-		}
 		return registry.values();
 	}
 

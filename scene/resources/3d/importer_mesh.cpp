@@ -34,7 +34,6 @@
 #include "core/math/convex_hull.h"
 #include "core/math/random_pcg.h"
 #include "core/math/static_raycaster.h"
-#include "scene/resources/animation_library.h"
 #include "scene/resources/surface_tool.h"
 
 #include <cstdint>
@@ -135,18 +134,9 @@ void ImporterMesh::Surface::_split_normals(Array &r_arrays, const LocalVector<in
 	}
 }
 
-String ImporterMesh::validate_blend_shape_name(const String &p_name) {
-	String name = p_name;
-	const char *characters = ":";
-	for (const char *p = characters; *p; p++) {
-		name = name.replace(String::chr(*p), "_");
-	}
-	return name;
-}
-
 void ImporterMesh::add_blend_shape(const String &p_name) {
 	ERR_FAIL_COND(surfaces.size() > 0);
-	blend_shapes.push_back(validate_blend_shape_name(p_name));
+	blend_shapes.push_back(p_name);
 }
 
 int ImporterMesh::get_blend_shape_count() const {
@@ -266,33 +256,6 @@ void ImporterMesh::set_surface_material(int p_surface, const Ref<Material> &p_ma
 	mesh.unref();
 }
 
-void ImporterMesh::optimize_indices_for_cache() {
-	if (!SurfaceTool::optimize_vertex_cache_func) {
-		return;
-	}
-
-	for (int i = 0; i < surfaces.size(); i++) {
-		if (surfaces[i].primitive != Mesh::PRIMITIVE_TRIANGLES) {
-			continue;
-		}
-
-		Vector<Vector3> vertices = surfaces[i].arrays[RS::ARRAY_VERTEX];
-		PackedInt32Array indices = surfaces[i].arrays[RS::ARRAY_INDEX];
-
-		unsigned int index_count = indices.size();
-		unsigned int vertex_count = vertices.size();
-
-		if (index_count == 0) {
-			continue;
-		}
-
-		int *indices_ptr = indices.ptrw();
-		SurfaceTool::optimize_vertex_cache_func((unsigned int *)indices_ptr, (const unsigned int *)indices_ptr, index_count, vertex_count);
-
-		surfaces.write[i].arrays[RS::ARRAY_INDEX] = indices;
-	}
-}
-
 #define VERTEX_SKIN_FUNC(bone_count, vert_idx, read_array, write_array, transform_array, bone_array, weight_array) \
 	Vector3 transformed_vert;                                                                                      \
 	for (unsigned int weight_idx = 0; weight_idx < bone_count; weight_idx++) {                                     \
@@ -306,7 +269,7 @@ void ImporterMesh::optimize_indices_for_cache() {
 	}                                                                                                              \
 	write_array[vert_idx] = transformed_vert;
 
-void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_split_angle, Array p_bone_transform_array, bool p_raycast_normals) {
+void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_split_angle, Array p_bone_transform_array) {
 	if (!SurfaceTool::simplify_scale_func) {
 		return;
 	}
@@ -469,7 +432,6 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 		unsigned int index_target = 12; // Start with the smallest target, 4 triangles
 		unsigned int last_index_count = 0;
 
-		// Only used for normal raycasting
 		int split_vertex_count = vertex_count;
 		LocalVector<Vector3> split_vertex_normals;
 		LocalVector<int> split_vertex_indices;
@@ -479,7 +441,7 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 		RandomPCG pcg;
 		pcg.seed(123456789); // Keep seed constant across imports
 
-		Ref<StaticRaycaster> raycaster = p_raycast_normals ? StaticRaycaster::create() : Ref<StaticRaycaster>();
+		Ref<StaticRaycaster> raycaster = StaticRaycaster::create();
 		if (raycaster.is_valid()) {
 			raycaster->add_mesh(vertices, indices, 0);
 			raycaster->commit();
@@ -526,22 +488,19 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 			}
 
 			new_indices.resize(new_index_count);
+
+			LocalVector<LocalVector<int>> vertex_corners;
+			vertex_corners.resize(vertex_count);
 			{
 				int *ptrw = new_indices.ptrw();
 				for (unsigned int j = 0; j < new_index_count; j++) {
-					ptrw[j] = vertex_inverse_remap[ptrw[j]];
+					const int &remapped = vertex_inverse_remap[ptrw[j]];
+					vertex_corners[remapped].push_back(j);
+					ptrw[j] = remapped;
 				}
 			}
 
 			if (raycaster.is_valid()) {
-				LocalVector<LocalVector<int>> vertex_corners;
-				vertex_corners.resize(vertex_count);
-
-				int *ptrw = new_indices.ptrw();
-				for (unsigned int j = 0; j < new_index_count; j++) {
-					vertex_corners[ptrw[j]].push_back(j);
-				}
-
 				float error_factor = 1.0f / (scale * MAX(mesh_error, 0.15));
 				const float ray_bias = 0.05;
 				float ray_length = ray_bias + mesh_error * scale * 3.0f;
@@ -712,10 +671,7 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 			}
 		}
 
-		if (raycaster.is_valid()) {
-			surfaces.write[i].split_normals(split_vertex_indices, split_vertex_normals);
-		}
-
+		surfaces.write[i].split_normals(split_vertex_indices, split_vertex_normals);
 		surfaces.write[i].lods.sort_custom<Surface::LODComparator>();
 
 		for (int j = 0; j < surfaces.write[i].lods.size(); j++) {
@@ -724,10 +680,6 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 			SurfaceTool::optimize_vertex_cache_func(lod_indices_ptr, lod_indices_ptr, lod.indices.size(), split_vertex_count);
 		}
 	}
-}
-
-void ImporterMesh::_generate_lods_bind(float p_normal_merge_angle, float p_normal_split_angle, Array p_skin_pose_transform_array) {
-	generate_lods(p_normal_merge_angle, p_normal_split_angle, p_skin_pose_transform_array);
 }
 
 bool ImporterMesh::has_mesh() const {
@@ -859,10 +811,6 @@ void ImporterMesh::create_shadow_mesh() {
 				index_wptr[j] = vertex_remap[index];
 			}
 
-			if (SurfaceTool::optimize_vertex_cache_func && surfaces[i].primitive == Mesh::PRIMITIVE_TRIANGLES) {
-				SurfaceTool::optimize_vertex_cache_func((unsigned int *)index_wptr, (const unsigned int *)index_wptr, index_count, new_vertices.size());
-			}
-
 			new_surface[RS::ARRAY_INDEX] = new_indices;
 
 			// Make sure the same LODs as the full version are used.
@@ -879,10 +827,6 @@ void ImporterMesh::create_shadow_mesh() {
 					int index = index_rptr[k];
 					ERR_FAIL_INDEX(index, vertex_count);
 					index_wptr[k] = vertex_remap[index];
-				}
-
-				if (SurfaceTool::optimize_vertex_cache_func && surfaces[i].primitive == Mesh::PRIMITIVE_TRIANGLES) {
-					SurfaceTool::optimize_vertex_cache_func((unsigned int *)index_wptr, (const unsigned int *)index_wptr, index_count, new_vertices.size());
 				}
 
 				lods[surfaces[i].lods[j].distance] = new_indices;
@@ -1118,12 +1062,9 @@ Ref<NavigationMesh> ImporterMesh::create_navigation_mesh() {
 	}
 
 	HashMap<Vector3, int> unique_vertices;
-	Vector<Vector<int>> face_polygons;
-	face_polygons.resize(faces.size());
+	LocalVector<int> face_indices;
 
 	for (int i = 0; i < faces.size(); i++) {
-		Vector<int> face_indices;
-		face_indices.resize(3);
 		for (int j = 0; j < 3; j++) {
 			Vector3 v = faces[i].vertex[j];
 			int idx;
@@ -1133,9 +1074,8 @@ Ref<NavigationMesh> ImporterMesh::create_navigation_mesh() {
 				idx = unique_vertices.size();
 				unique_vertices[v] = idx;
 			}
-			face_indices.write[j] = idx;
+			face_indices.push_back(idx);
 		}
-		face_polygons.write[i] = face_indices;
 	}
 
 	Vector<Vector3> vertices;
@@ -1146,7 +1086,16 @@ Ref<NavigationMesh> ImporterMesh::create_navigation_mesh() {
 
 	Ref<NavigationMesh> nm;
 	nm.instantiate();
-	nm->set_data(vertices, face_polygons);
+	nm->set_vertices(vertices);
+
+	Vector<int> v3;
+	v3.resize(3);
+	for (uint32_t i = 0; i < face_indices.size(); i += 3) {
+		v3.write[0] = face_indices[i + 0];
+		v3.write[1] = face_indices[i + 1];
+		v3.write[2] = face_indices[i + 2];
+		nm->add_polygon(v3);
+	}
 
 	return nm;
 }
@@ -1418,7 +1367,7 @@ void ImporterMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_surface_name", "surface_idx", "name"), &ImporterMesh::set_surface_name);
 	ClassDB::bind_method(D_METHOD("set_surface_material", "surface_idx", "material"), &ImporterMesh::set_surface_material);
 
-	ClassDB::bind_method(D_METHOD("generate_lods", "normal_merge_angle", "normal_split_angle", "bone_transform_array"), &ImporterMesh::_generate_lods_bind);
+	ClassDB::bind_method(D_METHOD("generate_lods", "normal_merge_angle", "normal_split_angle", "bone_transform_array"), &ImporterMesh::generate_lods);
 	ClassDB::bind_method(D_METHOD("get_mesh", "base_mesh"), &ImporterMesh::get_mesh, DEFVAL(Ref<ArrayMesh>()));
 	ClassDB::bind_method(D_METHOD("clear"), &ImporterMesh::clear);
 
@@ -1428,5 +1377,5 @@ void ImporterMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_lightmap_size_hint", "size"), &ImporterMesh::set_lightmap_size_hint);
 	ClassDB::bind_method(D_METHOD("get_lightmap_size_hint"), &ImporterMesh::get_lightmap_size_hint);
 
-	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_data", "_get_data");
+	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "_set_data", "_get_data");
 }

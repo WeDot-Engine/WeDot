@@ -12,7 +12,6 @@ allprojects {
         mavenCentral()
         gradlePluginPortal()
         maven { url "https://plugins.gradle.org/m2/" }
-        maven { url "https://s01.oss.sonatype.org/content/repositories/snapshots/"}
 
         // Godot user plugins custom maven repos
         String[] mavenRepos = getGodotPluginsMavenRepos()
@@ -29,8 +28,6 @@ allprojects {
 configurations {
     // Initializes a placeholder for the devImplementation dependency configuration.
     devImplementation {}
-    // Initializes a placeholder for the monoImplementation dependency configuration.
-    monoImplementation {}
 }
 
 dependencies {
@@ -44,9 +41,9 @@ dependencies {
     } else {
         // Godot gradle build mode. In this scenario this project is the only one around and the Godot
         // library is available through the pre-generated godot-lib.*.aar android archive files.
-        debugImplementation fileTree(dir: 'libs/debug', include: ['**/*.jar', '*.aar'])
-        devImplementation fileTree(dir: 'libs/dev', include: ['**/*.jar', '*.aar'])
-        releaseImplementation fileTree(dir: 'libs/release', include: ['**/*.jar', '*.aar'])
+        debugImplementation fileTree(dir: 'libs/debug', include: ['*.jar', '*.aar'])
+        devImplementation fileTree(dir: 'libs/dev', include: ['*.jar', '*.aar'])
+        releaseImplementation fileTree(dir: 'libs/release', include: ['*.jar', '*.aar'])
     }
 
     // Godot user plugins remote dependencies
@@ -61,12 +58,6 @@ dependencies {
     String[] pluginsBinaries = getGodotPluginsLocalBinaries()
     if (pluginsBinaries != null && pluginsBinaries.size() > 0) {
         implementation files(pluginsBinaries)
-    }
-
-    // .NET dependencies
-    String jar = '../../../../modules/mono/thirdparty/libSystem.Security.Cryptography.Native.Android.jar'
-    if (file(jar).exists()) {
-        monoImplementation files(jar)
     }
 }
 
@@ -163,10 +154,6 @@ android {
         }
     }
 
-    buildFeatures {
-        buildConfig = true
-    }
-
     buildTypes {
 
         debug {
@@ -204,13 +191,6 @@ android {
         }
     }
 
-    flavorDimensions 'edition'
-
-    productFlavors {
-        standard {}
-        mono {}
-    }
-
     sourceSets {
         main {
             manifest.srcFile 'AndroidManifest.xml'
@@ -226,38 +206,75 @@ android {
 
     applicationVariants.all { variant ->
         variant.outputs.all { output ->
-            String filenameSuffix = variant.flavorName == "mono" ? variant.name : variant.buildType.name
-            output.outputFileName = "android_${filenameSuffix}.apk"
+            output.outputFileName = "android_${variant.name}.apk"
         }
     }
 }
 
-task copyAndRenameBinary(type: Copy) {
+task copyAndRenameDebugApk(type: Copy) {
     // The 'doNotTrackState' is added to disable gradle's up-to-date checks for output files
     // and directories. Otherwise this check may cause permissions access failures on Windows
     // machines.
     doNotTrackState("No need for up-to-date checks for the copy-and-rename operation")
 
-    String exportPath = getExportPath()
-    String exportFilename = getExportFilename()
-    String exportEdition = getExportEdition()
-    String exportBuildType = getExportBuildType()
-    String exportBuildTypeCapitalized = exportBuildType.capitalize()
-    String exportFormat = getExportFormat()
+    from "$buildDir/outputs/apk/debug/android_debug.apk"
+    into getExportPath()
+    rename "android_debug.apk", getExportFilename()
+}
 
-    boolean isAab = exportFormat == "aab"
-    boolean isMono = exportEdition == "mono"
-    String filenameSuffix = exportBuildType
-    if (isMono) {
-        filenameSuffix = isAab ? "${exportEdition}-${exportBuildType}" : "${exportEdition}${exportBuildTypeCapitalized}"
-    }
+task copyAndRenameDevApk(type: Copy) {
+    // The 'doNotTrackState' is added to disable gradle's up-to-date checks for output files
+    // and directories. Otherwise this check may cause permissions access failures on Windows
+    // machines.
+    doNotTrackState("No need for up-to-date checks for the copy-and-rename operation")
 
-    String sourceFilename = isAab ? "build-${filenameSuffix}.aab" : "android_${filenameSuffix}.apk"
-    String sourceFilepath = isAab ? "$buildDir/outputs/bundle/${exportEdition}${exportBuildTypeCapitalized}/$sourceFilename" : "$buildDir/outputs/apk/$exportEdition/$exportBuildType/$sourceFilename"
+    from "$buildDir/outputs/apk/dev/android_dev.apk"
+    into getExportPath()
+    rename "android_dev.apk", getExportFilename()
+}
 
-    from sourceFilepath
-    into exportPath
-    rename sourceFilename, exportFilename
+task copyAndRenameReleaseApk(type: Copy) {
+    // The 'doNotTrackState' is added to disable gradle's up-to-date checks for output files
+    // and directories. Otherwise this check may cause permissions access failures on Windows
+    // machines.
+    doNotTrackState("No need for up-to-date checks for the copy-and-rename operation")
+
+    from "$buildDir/outputs/apk/release/android_release.apk"
+    into getExportPath()
+    rename "android_release.apk", getExportFilename()
+}
+
+task copyAndRenameDebugAab(type: Copy) {
+    // The 'doNotTrackState' is added to disable gradle's up-to-date checks for output files
+    // and directories. Otherwise this check may cause permissions access failures on Windows
+    // machines.
+    doNotTrackState("No need for up-to-date checks for the copy-and-rename operation")
+
+    from "$buildDir/outputs/bundle/debug/build-debug.aab"
+    into getExportPath()
+    rename "build-debug.aab", getExportFilename()
+}
+
+task copyAndRenameDevAab(type: Copy) {
+    // The 'doNotTrackState' is added to disable gradle's up-to-date checks for output files
+    // and directories. Otherwise this check may cause permissions access failures on Windows
+    // machines.
+    doNotTrackState("No need for up-to-date checks for the copy-and-rename operation")
+
+    from "$buildDir/outputs/bundle/dev/build-dev.aab"
+    into getExportPath()
+    rename "build-dev.aab", getExportFilename()
+}
+
+task copyAndRenameReleaseAab(type: Copy) {
+    // The 'doNotTrackState' is added to disable gradle's up-to-date checks for output files
+    // and directories. Otherwise this check may cause permissions access failures on Windows
+    // machines.
+    doNotTrackState("No need for up-to-date checks for the copy-and-rename operation")
+
+    from "$buildDir/outputs/bundle/release/build-release.aab"
+    into getExportPath()
+    rename "build-release.aab", getExportFilename()
 }
 
 /**

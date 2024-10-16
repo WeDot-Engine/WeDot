@@ -46,10 +46,6 @@ void mbedtls_x509write_crt_init(mbedtls_x509write_cert *ctx)
 
 void mbedtls_x509write_crt_free(mbedtls_x509write_cert *ctx)
 {
-    if (ctx == NULL) {
-        return;
-    }
-
     mbedtls_asn1_free_named_data_list(&ctx->subject);
     mbedtls_asn1_free_named_data_list(&ctx->issuer);
     mbedtls_asn1_free_named_data_list(&ctx->extensions);

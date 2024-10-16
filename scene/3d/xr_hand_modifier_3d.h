@@ -55,8 +55,6 @@ public:
 	void set_bone_update(BoneUpdate p_bone_update);
 	BoneUpdate get_bone_update() const;
 
-	PackedStringArray get_configuration_warnings() const override;
-
 	void _notification(int p_what);
 
 protected:

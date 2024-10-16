@@ -150,10 +150,12 @@ void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 
 			double time = frame_profile[i + 1].gpu_msec - frame_profile[i].gpu_msec;
 
-			if (print_gpu_profile_task_time.has(name)) {
-				print_gpu_profile_task_time[name] += time;
-			} else {
-				print_gpu_profile_task_time[name] = time;
+			if (name[0] != '<' && name[0] != '>') {
+				if (print_gpu_profile_task_time.has(name)) {
+					print_gpu_profile_task_time[name] += time;
+				} else {
+					print_gpu_profile_task_time[name] = time;
+				}
 			}
 		}
 
@@ -379,9 +381,12 @@ void RenderingServerDefault::_thread_loop() {
 
 /* INTERPOLATION */
 
+void RenderingServerDefault::tick() {
+	RSG::canvas->tick();
+}
+
 void RenderingServerDefault::set_physics_interpolation_enabled(bool p_enabled) {
 	RSG::canvas->set_physics_interpolation_enabled(p_enabled);
-	RSG::scene->set_physics_interpolation_enabled(p_enabled);
 }
 
 /* EVENT QUEUING */
@@ -404,15 +409,6 @@ void RenderingServerDefault::draw(bool p_swap_buffers, double frame_step) {
 	} else {
 		_draw(p_swap_buffers, frame_step);
 	}
-}
-
-void RenderingServerDefault::tick() {
-	RSG::canvas->tick();
-	RSG::scene->tick();
-}
-
-void RenderingServerDefault::pre_draw(bool p_will_draw) {
-	RSG::scene->pre_draw(p_will_draw);
 }
 
 void RenderingServerDefault::_call_on_render_thread(const Callable &p_callable) {

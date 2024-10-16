@@ -1,9 +1,10 @@
 const array: Array = [0]
 const dictionary := {1: 2}
 
+@warning_ignore("assert_always_true")
 func test():
-	Utils.check(array.is_read_only() == true)
-	Utils.check(str(array) == '[0]')
-	Utils.check(dictionary.is_read_only() == true)
-	Utils.check(str(dictionary) == '{ 1: 2 }')
+	assert(array.is_read_only() == true)
+	assert(str(array) == '[0]')
+	assert(dictionary.is_read_only() == true)
+	assert(str(dictionary) == '{ 1: 2 }')
 	print('ok')

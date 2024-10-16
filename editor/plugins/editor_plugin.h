@@ -32,7 +32,6 @@
 #define EDITOR_PLUGIN_H
 
 #include "core/io/config_file.h"
-#include "editor/plugins/editor_context_menu_plugin.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/gui/control.h"
 
@@ -42,7 +41,6 @@ class PopupMenu;
 class EditorDebuggerPlugin;
 class EditorExport;
 class EditorExportPlugin;
-class EditorExportPlatform;
 class EditorImportPlugin;
 class EditorInspectorPlugin;
 class EditorInterface;
@@ -226,9 +224,6 @@ public:
 	void add_export_plugin(const Ref<EditorExportPlugin> &p_exporter);
 	void remove_export_plugin(const Ref<EditorExportPlugin> &p_exporter);
 
-	void add_export_platform(const Ref<EditorExportPlatform> &p_platform);
-	void remove_export_platform(const Ref<EditorExportPlatform> &p_platform);
-
 	void add_node_3d_gizmo_plugin(const Ref<EditorNode3DGizmoPlugin> &p_gizmo_plugin);
 	void remove_node_3d_gizmo_plugin(const Ref<EditorNode3DGizmoPlugin> &p_gizmo_plugin);
 
@@ -249,9 +244,6 @@ public:
 
 	void add_resource_conversion_plugin(const Ref<EditorResourceConversionPlugin> &p_plugin);
 	void remove_resource_conversion_plugin(const Ref<EditorResourceConversionPlugin> &p_plugin);
-
-	void add_context_menu_plugin(EditorContextMenuPlugin::ContextMenuSlot p_slot, const Ref<EditorContextMenuPlugin> &p_plugin);
-	void remove_context_menu_plugin(const Ref<EditorContextMenuPlugin> &p_plugin);
 
 	void enable_plugin();
 	void disable_plugin();

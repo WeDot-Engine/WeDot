@@ -55,7 +55,7 @@ class EditorSyntaxHighlighter : public SyntaxHighlighter {
 	GDCLASS(EditorSyntaxHighlighter, SyntaxHighlighter)
 
 private:
-	Ref<RefCounted> edited_resource;
+	Ref<RefCounted> edited_resourse;
 
 protected:
 	static void _bind_methods();
@@ -67,8 +67,8 @@ public:
 	virtual String _get_name() const;
 	virtual PackedStringArray _get_supported_languages() const;
 
-	void _set_edited_resource(const Ref<Resource> &p_res) { edited_resource = p_res; }
-	Ref<RefCounted> _get_edited_resource() { return edited_resource; }
+	void _set_edited_resource(const Ref<Resource> &p_res) { edited_resourse = p_res; }
+	Ref<RefCounted> _get_edited_resource() { return edited_resourse; }
 
 	virtual Ref<EditorSyntaxHighlighter> _create() const;
 };
@@ -131,7 +131,7 @@ class ScriptEditorQuickOpen : public ConfirmationDialog {
 
 	void _update_search();
 
-	void _sbox_input(const Ref<InputEvent> &p_event);
+	void _sbox_input(const Ref<InputEvent> &p_ie);
 	Vector<String> functions;
 
 	void _confirmed();
@@ -170,7 +170,7 @@ public:
 	virtual Variant get_edit_state() = 0;
 	virtual void set_edit_state(const Variant &p_state) = 0;
 	virtual Variant get_navigation_state() = 0;
-	virtual void goto_line(int p_line, int p_column = 0) = 0;
+	virtual void goto_line(int p_line, bool p_with_error = false) = 0;
 	virtual void set_executing_line(int p_line) = 0;
 	virtual void clear_executing_line() = 0;
 	virtual void trim_trailing_whitespace() = 0;
@@ -539,7 +539,6 @@ public:
 	_FORCE_INLINE_ bool edit(const Ref<Resource> &p_resource, bool p_grab_focus = true) { return edit(p_resource, -1, 0, p_grab_focus); }
 	bool edit(const Ref<Resource> &p_resource, int p_line, int p_col, bool p_grab_focus = true);
 
-	Vector<String> _get_breakpoints();
 	void get_breakpoints(List<String> *p_breakpoints);
 
 	PackedStringArray get_unsaved_scripts() const;

@@ -32,12 +32,12 @@
 #include "core/config/project_settings.h"
 #include "core/io/file_access.h"
 
-PacketPeerDTLS *(*PacketPeerDTLS::_create)(bool p_notify_postinitialize) = nullptr;
+PacketPeerDTLS *(*PacketPeerDTLS::_create)() = nullptr;
 bool PacketPeerDTLS::available = false;
 
-PacketPeerDTLS *PacketPeerDTLS::create(bool p_notify_postinitialize) {
+PacketPeerDTLS *PacketPeerDTLS::create() {
 	if (_create) {
-		return _create(p_notify_postinitialize);
+		return _create();
 	}
 	return nullptr;
 }

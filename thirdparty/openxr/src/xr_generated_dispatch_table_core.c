@@ -37,7 +37,7 @@
 extern "C" { 
 #endif
 // Helper function to populate an instance dispatch table
-void GeneratedXrPopulateDispatchTableCore(struct XrGeneratedDispatchTableCore *table,
+void GeneratedXrPopulateDispatchTable(struct XrGeneratedDispatchTable *table,
                                       XrInstance instance,
                                       PFN_xrGetInstanceProcAddr get_inst_proc_addr) {
 
@@ -95,9 +95,6 @@ void GeneratedXrPopulateDispatchTableCore(struct XrGeneratedDispatchTableCore *t
     (get_inst_proc_addr(instance, "xrGetInputSourceLocalizedName", (PFN_xrVoidFunction*)&table->GetInputSourceLocalizedName));
     (get_inst_proc_addr(instance, "xrApplyHapticFeedback", (PFN_xrVoidFunction*)&table->ApplyHapticFeedback));
     (get_inst_proc_addr(instance, "xrStopHapticFeedback", (PFN_xrVoidFunction*)&table->StopHapticFeedback));
-
-    // ---- Core 1.1 commands
-    (get_inst_proc_addr(instance, "xrLocateSpaces", (PFN_xrVoidFunction*)&table->LocateSpaces));
 
     // ---- XR_EXT_debug_utils extension commands
     (get_inst_proc_addr(instance, "xrSetDebugUtilsObjectNameEXT", (PFN_xrVoidFunction*)&table->SetDebugUtilsObjectNameEXT));

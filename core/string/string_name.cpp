@@ -39,30 +39,6 @@ StaticCString StaticCString::create(const char *p_ptr) {
 	return scs;
 }
 
-bool StringName::_Data::operator==(const String &p_name) const {
-	if (cname) {
-		return p_name == cname;
-	} else {
-		return name == p_name;
-	}
-}
-
-bool StringName::_Data::operator!=(const String &p_name) const {
-	return !operator==(p_name);
-}
-
-bool StringName::_Data::operator==(const char *p_name) const {
-	if (cname) {
-		return strcmp(cname, p_name) == 0;
-	} else {
-		return name == p_name;
-	}
-}
-
-bool StringName::_Data::operator!=(const char *p_name) const {
-	return !operator==(p_name);
-}
-
 StringName _scs_create(const char *p_chr, bool p_static) {
 	return (p_chr[0] ? StringName(StaticCString::create(p_chr), p_static) : StringName());
 }
@@ -162,25 +138,20 @@ void StringName::unref() {
 	_data = nullptr;
 }
 
-uint32_t StringName::get_empty_hash() {
-	static uint32_t empty_hash = String::hash("");
-	return empty_hash;
-}
-
 bool StringName::operator==(const String &p_name) const {
-	if (_data) {
-		return _data->operator==(p_name);
+	if (!_data) {
+		return (p_name.length() == 0);
 	}
 
-	return p_name.is_empty();
+	return (_data->get_name() == p_name);
 }
 
 bool StringName::operator==(const char *p_name) const {
-	if (_data) {
-		return _data->operator==(p_name);
+	if (!_data) {
+		return (p_name[0] == 0);
 	}
 
-	return p_name[0] == 0;
+	return (_data->get_name() == p_name);
 }
 
 bool StringName::operator!=(const String &p_name) const {
@@ -197,47 +168,9 @@ bool StringName::operator!=(const StringName &p_name) const {
 	return _data != p_name._data;
 }
 
-char32_t StringName::operator[](int p_index) const {
-	if (_data) {
-		if (_data->cname) {
-			CRASH_BAD_INDEX(p_index, static_cast<long>(strlen(_data->cname)));
-			return _data->cname[p_index];
-		} else {
-			return _data->name[p_index];
-		}
-	}
-
-	CRASH_BAD_INDEX(p_index, 0);
-	return 0;
-}
-
-int StringName::length() const {
-	if (_data) {
-		if (_data->cname) {
-			return strlen(_data->cname);
-		} else {
-			return _data->name.length();
-		}
-	}
-
-	return 0;
-}
-
-bool StringName::is_empty() const {
-	if (_data) {
-		if (_data->cname) {
-			return _data->cname[0] == 0;
-		} else {
-			return _data->name.is_empty();
-		}
-	}
-
-	return true;
-}
-
-StringName &StringName::operator=(const StringName &p_name) {
+void StringName::operator=(const StringName &p_name) {
 	if (this == &p_name) {
-		return *this;
+		return;
 	}
 
 	unref();
@@ -245,8 +178,6 @@ StringName &StringName::operator=(const StringName &p_name) {
 	if (p_name._data && p_name._data->refcount.ref()) {
 		_data = p_name._data;
 	}
-
-	return *this;
 }
 
 StringName::StringName(const StringName &p_name) {
@@ -260,10 +191,11 @@ StringName::StringName(const StringName &p_name) {
 }
 
 void StringName::assign_static_unique_class_name(StringName *ptr, const char *p_name) {
-	MutexLock lock(mutex);
+	mutex.lock();
 	if (*ptr == StringName()) {
 		*ptr = StringName(p_name, true);
 	}
+	mutex.unlock();
 }
 
 StringName::StringName(const char *p_name, bool p_static) {
@@ -285,7 +217,7 @@ StringName::StringName(const char *p_name, bool p_static) {
 
 	while (_data) {
 		// compare hash first
-		if (_data->hash == hash && _data->operator==(p_name)) {
+		if (_data->hash == hash && _data->get_name() == p_name) {
 			break;
 		}
 		_data = _data->next;
@@ -344,7 +276,7 @@ StringName::StringName(const StaticCString &p_static_string, bool p_static) {
 
 	while (_data) {
 		// compare hash first
-		if (_data->hash == hash && _data->operator==(p_static_string.ptr)) {
+		if (_data->hash == hash && _data->get_name() == p_static_string.ptr) {
 			break;
 		}
 		_data = _data->next;
@@ -402,7 +334,7 @@ StringName::StringName(const String &p_name, bool p_static) {
 	_data = _table[idx];
 
 	while (_data) {
-		if (_data->hash == hash && _data->operator==(p_name)) {
+		if (_data->hash == hash && _data->get_name() == p_name) {
 			break;
 		}
 		_data = _data->next;
@@ -461,7 +393,7 @@ StringName StringName::search(const char *p_name) {
 
 	while (_data) {
 		// compare hash first
-		if (_data->hash == hash && _data->operator==(p_name)) {
+		if (_data->hash == hash && _data->get_name() == p_name) {
 			break;
 		}
 		_data = _data->next;
@@ -498,7 +430,7 @@ StringName StringName::search(const char32_t *p_name) {
 
 	while (_data) {
 		// compare hash first
-		if (_data->hash == hash && _data->operator==(p_name)) {
+		if (_data->hash == hash && _data->get_name() == p_name) {
 			break;
 		}
 		_data = _data->next;
@@ -524,7 +456,7 @@ StringName StringName::search(const String &p_name) {
 
 	while (_data) {
 		// compare hash first
-		if (_data->hash == hash && _data->operator==(p_name)) {
+		if (_data->hash == hash && p_name == _data->get_name()) {
 			break;
 		}
 		_data = _data->next;
@@ -543,15 +475,15 @@ StringName StringName::search(const String &p_name) {
 }
 
 bool operator==(const String &p_name, const StringName &p_string_name) {
-	return p_string_name.operator==(p_name);
+	return p_name == p_string_name.operator String();
 }
 bool operator!=(const String &p_name, const StringName &p_string_name) {
-	return p_string_name.operator!=(p_name);
+	return p_name != p_string_name.operator String();
 }
 
 bool operator==(const char *p_name, const StringName &p_string_name) {
-	return p_string_name.operator==(p_name);
+	return p_name == p_string_name.operator String();
 }
 bool operator!=(const char *p_name, const StringName &p_string_name) {
-	return p_string_name.operator!=(p_name);
+	return p_name != p_string_name.operator String();
 }

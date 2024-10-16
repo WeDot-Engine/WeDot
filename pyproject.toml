@@ -10,7 +10,6 @@ warn_unreachable = true
 namespace_packages = true
 explicit_package_bases = true
 exclude = ["thirdparty/"]
-python_version = "3.8"
 
 [tool.ruff]
 extend-exclude = ["thirdparty"]
@@ -26,19 +25,7 @@ extend-select = [
 [tool.ruff.lint.per-file-ignores]
 "{SConstruct,SCsub}" = [
 	"E402", # Module level import not at top of file
-	"F403", # Undefined local with import star
-	"F405", # Undefined local with import star usage
-]
-
-[tool.ruff.lint.isort]
-sections = { metadata = ["misc.utility.scons_hints"] }
-section-order = [
-	"future",
-	"metadata",
-	"standard-library",
-	"third-party",
-	"first-party",
-	"local-folder",
+	"F821", # Undefined name
 ]
 
 [tool.codespell]
@@ -82,7 +69,6 @@ ignore-words-list = """\
 	numer,
 	ot,
 	outin,
-	parm,
 	requestor,
 	te,
 	textin,

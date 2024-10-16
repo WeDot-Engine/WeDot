@@ -103,8 +103,6 @@ public:
 	virtual int get_height() const override;
 	virtual int get_depth() const override;
 
-	virtual bool has_mipmaps() const override;
-
 	virtual RID get_rid() const override;
 
 	virtual Vector<Ref<Image>> get_data() const override;

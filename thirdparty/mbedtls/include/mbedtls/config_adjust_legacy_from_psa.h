@@ -2,8 +2,6 @@
  * \file mbedtls/config_adjust_legacy_from_psa.h
  * \brief Adjust PSA configuration: activate legacy implementations
  *
- * This is an internal header. Do not include it directly.
- *
  * When MBEDTLS_PSA_CRYPTO_CONFIG is enabled, activate legacy implementations
  * of cryptographic mechanisms as needed to fulfill the needs of the PSA
  * configuration. Generally speaking, we activate a legacy mechanism if
@@ -17,14 +15,6 @@
 
 #ifndef MBEDTLS_CONFIG_ADJUST_LEGACY_FROM_PSA_H
 #define MBEDTLS_CONFIG_ADJUST_LEGACY_FROM_PSA_H
-
-#if !defined(MBEDTLS_CONFIG_FILES_READ)
-#error "Do not include mbedtls/config_adjust_*.h manually! This can lead to problems, " \
-    "up to and including runtime errors such as buffer overflows. " \
-    "If you're trying to fix a complaint from check_config.h, just remove " \
-    "it from your configuration file: since Mbed TLS 3.0, it is included " \
-    "automatically at the right point."
-#endif /* */
 
 /* Define appropriate ACCEL macros for the p256-m driver.
  * In the future, those should be generated from the drivers JSON description.
@@ -508,6 +498,7 @@
  * The PSA implementation has its own implementation of HKDF, separate from
  * hkdf.c. No need to enable MBEDTLS_HKDF_C here.
  */
+#define MBEDTLS_PSA_BUILTIN_ALG_HMAC 1
 #define MBEDTLS_PSA_BUILTIN_ALG_HKDF 1
 #endif /* !MBEDTLS_PSA_ACCEL_ALG_HKDF */
 #endif /* PSA_WANT_ALG_HKDF */
@@ -518,6 +509,7 @@
  * The PSA implementation has its own implementation of HKDF, separate from
  * hkdf.c. No need to enable MBEDTLS_HKDF_C here.
  */
+#define MBEDTLS_PSA_BUILTIN_ALG_HMAC 1
 #define MBEDTLS_PSA_BUILTIN_ALG_HKDF_EXTRACT 1
 #endif /* !MBEDTLS_PSA_ACCEL_ALG_HKDF_EXTRACT */
 #endif /* PSA_WANT_ALG_HKDF_EXTRACT */
@@ -528,6 +520,7 @@
  * The PSA implementation has its own implementation of HKDF, separate from
  * hkdf.c. No need to enable MBEDTLS_HKDF_C here.
  */
+#define MBEDTLS_PSA_BUILTIN_ALG_HMAC 1
 #define MBEDTLS_PSA_BUILTIN_ALG_HKDF_EXPAND 1
 #endif /* !MBEDTLS_PSA_ACCEL_ALG_HKDF_EXPAND */
 #endif /* PSA_WANT_ALG_HKDF_EXPAND */
@@ -637,6 +630,9 @@
 #if !defined(MBEDTLS_PSA_ACCEL_ALG_PBKDF2_HMAC)
 #define MBEDTLS_PSA_BUILTIN_ALG_PBKDF2_HMAC 1
 #define PSA_HAVE_SOFT_PBKDF2_HMAC 1
+#if !defined(MBEDTLS_PSA_ACCEL_ALG_HMAC)
+#define MBEDTLS_PSA_BUILTIN_ALG_HMAC 1
+#endif /* !MBEDTLS_PSA_ACCEL_ALG_HMAC */
 #endif /* !MBEDTLS_PSA_BUILTIN_ALG_PBKDF2_HMAC */
 #endif /* PSA_WANT_ALG_PBKDF2_HMAC */
 

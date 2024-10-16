@@ -102,7 +102,11 @@ void MaterialStorage::get_shader_parameter_list(RID p_shader, List<PropertyInfo>
 		if (E.value.scope != ShaderLanguage::ShaderNode::Uniform::SCOPE_LOCAL) {
 			continue;
 		}
-		filtered_uniforms.push_back(Pair<StringName, int>(E.key, E.value.prop_order));
+		if (E.value.texture_order >= 0) {
+			filtered_uniforms.push_back(Pair<StringName, int>(E.key, E.value.texture_order + 100000));
+		} else {
+			filtered_uniforms.push_back(Pair<StringName, int>(E.key, E.value.order));
+		}
 	}
 	int uniform_count = filtered_uniforms.size();
 	sorter.sort(filtered_uniforms.ptr(), uniform_count);

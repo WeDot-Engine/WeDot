@@ -5,5 +5,5 @@ func test():
 	for value in range(E.E0, E.E3):
 		var inferable := value
 		total += inferable
-	Utils.check(total == 0 + 1 + 2)
+	assert(total == 0 + 1 + 2)
 	print('ok')

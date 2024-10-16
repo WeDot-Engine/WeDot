@@ -35,11 +35,16 @@
 #include "core/io/missing_resource.h"
 #include "core/object/script_language.h"
 
-///
+// Version 2: Changed names for Basis, AABB, Vectors, etc.
+// Version 3: New string ID for ext/subresources, breaks forward compat.
+// Version 4: PackedByteArray can be base64 encoded, and PackedVector4Array was added.
+#define FORMAT_VERSION 4
+// For compat, save as version 3 if not using PackedVector4Array or no big PackedByteArray.
+#define FORMAT_VERSION_COMPAT 3
 
-void ResourceLoaderText::_printerr() {
-	ERR_PRINT(String(res_path + ":" + itos(lines) + " - Parse Error: " + error_text).utf8().get_data());
-}
+#define _printerr() ERR_PRINT(String(res_path + ":" + itos(lines) + " - Parse Error: " + error_text).utf8().get_data());
+
+///
 
 Ref<Resource> ResourceLoaderText::get_resource() {
 	return resource;
@@ -612,29 +617,14 @@ Error ResourceLoaderText::load() {
 						}
 					}
 
-					if (ClassDB::has_property(res->get_class_name(), assign)) {
-						if (value.get_type() == Variant::ARRAY) {
-							Array set_array = value;
-							bool is_get_valid = false;
-							Variant get_value = res->get(assign, &is_get_valid);
-							if (is_get_valid && get_value.get_type() == Variant::ARRAY) {
-								Array get_array = get_value;
-								if (!set_array.is_same_typed(get_array)) {
-									value = Array(set_array, get_array.get_typed_builtin(), get_array.get_typed_class_name(), get_array.get_typed_script());
-								}
-							}
-						}
-
-						if (value.get_type() == Variant::DICTIONARY) {
-							Dictionary set_dict = value;
-							bool is_get_valid = false;
-							Variant get_value = res->get(assign, &is_get_valid);
-							if (is_get_valid && get_value.get_type() == Variant::DICTIONARY) {
-								Dictionary get_dict = get_value;
-								if (!set_dict.is_same_typed(get_dict)) {
-									value = Dictionary(set_dict, get_dict.get_typed_key_builtin(), get_dict.get_typed_key_class_name(), get_dict.get_typed_key_script(),
-											get_dict.get_typed_value_builtin(), get_dict.get_typed_value_class_name(), get_dict.get_typed_value_script());
-								}
+					if (value.get_type() == Variant::ARRAY) {
+						Array set_array = value;
+						bool is_get_valid = false;
+						Variant get_value = res->get(assign, &is_get_valid);
+						if (is_get_valid && get_value.get_type() == Variant::ARRAY) {
+							Array get_array = get_value;
+							if (!set_array.is_same_typed(get_array)) {
+								value = Array(set_array, get_array.get_typed_builtin(), get_array.get_typed_class_name(), get_array.get_typed_script());
 							}
 						}
 					}
@@ -754,29 +744,14 @@ Error ResourceLoaderText::load() {
 					}
 				}
 
-				if (ClassDB::has_property(resource->get_class_name(), assign)) {
-					if (value.get_type() == Variant::ARRAY) {
-						Array set_array = value;
-						bool is_get_valid = false;
-						Variant get_value = resource->get(assign, &is_get_valid);
-						if (is_get_valid && get_value.get_type() == Variant::ARRAY) {
-							Array get_array = get_value;
-							if (!set_array.is_same_typed(get_array)) {
-								value = Array(set_array, get_array.get_typed_builtin(), get_array.get_typed_class_name(), get_array.get_typed_script());
-							}
-						}
-					}
-
-					if (value.get_type() == Variant::DICTIONARY) {
-						Dictionary set_dict = value;
-						bool is_get_valid = false;
-						Variant get_value = resource->get(assign, &is_get_valid);
-						if (is_get_valid && get_value.get_type() == Variant::DICTIONARY) {
-							Dictionary get_dict = get_value;
-							if (!set_dict.is_same_typed(get_dict)) {
-								value = Dictionary(set_dict, get_dict.get_typed_key_builtin(), get_dict.get_typed_key_class_name(), get_dict.get_typed_key_script(),
-										get_dict.get_typed_value_builtin(), get_dict.get_typed_value_class_name(), get_dict.get_typed_value_script());
-							}
+				if (value.get_type() == Variant::ARRAY) {
+					Array set_array = value;
+					bool is_get_valid = false;
+					Variant get_value = resource->get(assign, &is_get_valid);
+					if (is_get_valid && get_value.get_type() == Variant::ARRAY) {
+						Array get_array = get_value;
+						if (!set_array.is_same_typed(get_array)) {
+							value = Array(set_array, get_array.get_typed_builtin(), get_array.get_typed_class_name(), get_array.get_typed_script());
 						}
 					}
 				}
@@ -1672,8 +1647,6 @@ void ResourceFormatSaverTextInstance::_find_resources(const Variant &p_variant, 
 		} break;
 		case Variant::DICTIONARY: {
 			Dictionary d = p_variant;
-			_find_resources(d.get_typed_key_script());
-			_find_resources(d.get_typed_value_script());
 			List<Variant> keys;
 			d.get_key_list(&keys);
 			for (const Variant &E : keys) {
@@ -1761,7 +1734,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 		if (load_steps > 1) {
 			title += "load_steps=" + itos(load_steps) + " ";
 		}
-		title += "format=" + itos(use_compat ? ResourceLoaderText::FORMAT_VERSION_COMPAT : ResourceLoaderText::FORMAT_VERSION) + "";
+		title += "format=" + itos(use_compat ? FORMAT_VERSION_COMPAT : FORMAT_VERSION) + "";
 
 		ResourceUID::ID uid = ResourceSaver::get_resource_id_for_path(local_path, true);
 

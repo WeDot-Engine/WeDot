@@ -81,17 +81,17 @@ struct _IP_ResolverPrivate {
 				continue;
 			}
 
-			MutexLock lock(mutex);
+			mutex.lock();
 			List<IPAddress> response;
 			String hostname = queue[i].hostname;
 			IP::Type type = queue[i].type;
-			lock.temp_unlock();
+			mutex.unlock();
 
 			// We should not lock while resolving the hostname,
 			// only when modifying the queue.
 			IP::get_singleton()->_resolve_hostname(response, hostname, type);
 
-			lock.temp_relock();
+			MutexLock lock(mutex);
 			// Could have been completed by another function, or deleted.
 			if (queue[i].status.get() != IP::RESOLVER_STATUS_WAITING) {
 				continue;
@@ -131,22 +131,21 @@ PackedStringArray IP::resolve_hostname_addresses(const String &p_hostname, Type 
 	List<IPAddress> res;
 	String key = _IP_ResolverPrivate::get_cache_key(p_hostname, p_type);
 
-	{
-		MutexLock lock(resolver->mutex);
-		if (resolver->cache.has(key)) {
-			res = resolver->cache[key];
-		} else {
-			// This should be run unlocked so the resolver thread can keep resolving
-			// other requests.
-			lock.temp_unlock();
-			_resolve_hostname(res, p_hostname, p_type);
-			lock.temp_relock();
-			// We might be overriding another result, but we don't care as long as the result is valid.
-			if (res.size()) {
-				resolver->cache[key] = res;
-			}
+	resolver->mutex.lock();
+	if (resolver->cache.has(key)) {
+		res = resolver->cache[key];
+	} else {
+		// This should be run unlocked so the resolver thread can keep resolving
+		// other requests.
+		resolver->mutex.unlock();
+		_resolve_hostname(res, p_hostname, p_type);
+		resolver->mutex.lock();
+		// We might be overriding another result, but we don't care as long as the result is valid.
+		if (res.size()) {
+			resolver->cache[key] = res;
 		}
 	}
+	resolver->mutex.unlock();
 
 	PackedStringArray result;
 	for (const IPAddress &E : res) {

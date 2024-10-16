@@ -82,7 +82,7 @@ private:
 		SPEC_CONSTANT_DISABLE_FOG = 14,
 		SPEC_CONSTANT_USE_DEPTH_FOG = 16,
 		SPEC_CONSTANT_IS_MULTIMESH = 17,
-		SPEC_CONSTANT_USE_LIGHTMAP_BICUBIC_FILTER = 18,
+
 	};
 
 	enum {
@@ -208,9 +208,8 @@ private:
 
 	struct LightmapData {
 		float normal_xform[12];
-		float texture_size[2];
+		float pad[3];
 		float exposure_normalization;
-		float pad;
 	};
 
 	struct LightmapCaptureData {
@@ -366,12 +365,12 @@ protected:
 	virtual RID _render_buffers_get_normal_texture(Ref<RenderSceneBuffersRD> p_render_buffers) override;
 	virtual RID _render_buffers_get_velocity_texture(Ref<RenderSceneBuffersRD> p_render_buffers) override;
 
-	virtual void environment_set_ssao_quality(RS::EnvironmentSSAOQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) override {}
-	virtual void environment_set_ssil_quality(RS::EnvironmentSSILQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) override {}
-	virtual void environment_set_ssr_roughness_quality(RS::EnvironmentSSRRoughnessQuality p_quality) override {}
+	virtual void environment_set_ssao_quality(RS::EnvironmentSSAOQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) override{};
+	virtual void environment_set_ssil_quality(RS::EnvironmentSSILQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) override{};
+	virtual void environment_set_ssr_roughness_quality(RS::EnvironmentSSRRoughnessQuality p_quality) override{};
 
-	virtual void sub_surface_scattering_set_quality(RS::SubSurfaceScatteringQuality p_quality) override {}
-	virtual void sub_surface_scattering_set_scale(float p_scale, float p_depth_scale) override {}
+	virtual void sub_surface_scattering_set_quality(RS::SubSurfaceScatteringQuality p_quality) override{};
+	virtual void sub_surface_scattering_set_scale(float p_scale, float p_depth_scale) override{};
 
 	/* Geometry instance */
 

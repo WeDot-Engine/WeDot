@@ -73,6 +73,9 @@ void SkeletonIK3DEditorPlugin::make_visible(bool p_visible) {
 	}
 }
 
+void SkeletonIK3DEditorPlugin::_bind_methods() {
+}
+
 SkeletonIK3DEditorPlugin::SkeletonIK3DEditorPlugin() {
 	play_btn = memnew(Button);
 	play_btn->set_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("Play"), EditorStringName(EditorIcons)));

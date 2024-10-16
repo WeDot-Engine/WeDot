@@ -362,24 +362,23 @@ class CommandQueueMT {
 			return;
 		}
 
-		MutexLock lock(mutex);
+		lock();
 
+		uint32_t allowance_id = WorkerThreadPool::thread_enter_unlock_allowance_zone(&mutex);
 		while (flush_read_ptr < command_mem.size()) {
 			uint64_t size = *(uint64_t *)&command_mem[flush_read_ptr];
 			flush_read_ptr += 8;
 			CommandBase *cmd = reinterpret_cast<CommandBase *>(&command_mem[flush_read_ptr]);
-			uint32_t allowance_id = WorkerThreadPool::thread_enter_unlock_allowance_zone(lock);
 			cmd->call();
-			WorkerThreadPool::thread_exit_unlock_allowance_zone(allowance_id);
 
 			// Handle potential realloc due to the command and unlock allowance.
 			cmd = reinterpret_cast<CommandBase *>(&command_mem[flush_read_ptr]);
 
 			if (unlikely(cmd->sync)) {
 				sync_head++;
-				lock.~MutexLock(); // Give an opportunity to awaiters right away.
+				unlock(); // Give an opportunity to awaiters right away.
 				sync_cond_var.notify_all();
-				new (&lock) MutexLock(mutex);
+				lock();
 				// Handle potential realloc happened during unlock.
 				cmd = reinterpret_cast<CommandBase *>(&command_mem[flush_read_ptr]);
 			}
@@ -388,11 +387,14 @@ class CommandQueueMT {
 
 			flush_read_ptr += size;
 		}
+		WorkerThreadPool::thread_exit_unlock_allowance_zone(allowance_id);
 
 		command_mem.clear();
 		flush_read_ptr = 0;
 
 		_prevent_sync_wraparound();
+
+		unlock();
 	}
 
 	_FORCE_INLINE_ void _wait_for_sync(MutexLock<BinaryMutex> &p_lock) {
@@ -408,6 +410,9 @@ class CommandQueueMT {
 	void _no_op() {}
 
 public:
+	void lock();
+	void unlock();
+
 	/* NORMAL PUSH COMMANDS */
 	DECL_PUSH(0)
 	SPACE_SEP_LIST(DECL_PUSH, 15)
@@ -441,8 +446,9 @@ public:
 	}
 
 	void set_pump_task_id(WorkerThreadPool::TaskID p_task_id) {
-		MutexLock lock(mutex);
+		lock();
 		pump_task_id = p_task_id;
+		unlock();
 	}
 
 	CommandQueueMT();

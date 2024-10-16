@@ -972,9 +972,7 @@ String PhysicsServer2DManager::get_server_name(int p_id) {
 }
 
 PhysicsServer2D *PhysicsServer2DManager::new_default_server() {
-	if (default_server_id == -1) {
-		return nullptr;
-	}
+	ERR_FAIL_COND_V(default_server_id == -1, nullptr);
 	Variant ret;
 	Callable::CallError ce;
 	physics_2d_servers[default_server_id].create_callback.callp(nullptr, 0, ret, ce);

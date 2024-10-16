@@ -48,7 +48,6 @@ class AnimationMixer : public Node {
 #endif // TOOLS_ENABLED
 
 	bool reset_on_save = true;
-	bool is_GDVIRTUAL_CALL_post_process_key_value = true;
 
 public:
 	enum AnimationCallbackModeProcess {
