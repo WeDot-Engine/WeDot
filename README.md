@@ -1,10 +1,23 @@
-# Wedot Game Engine 
+<div align="center">
+    <p align="center">
+        <img align="center" src="images/ICON.png" alt="logo" width="200">
+    </p>
+    <h1 align="center">Wedot Game Engine</h1>
+    <p align="center">梦由大家造。让游戏引擎创造纯净的游戏世界：
+        <a href="https://github.com/GodotHan/WeDot">
+            WeDot！
+        </a>
+    </p>
+    </br>
+</div>
+
+# 
 
 We dream, we do, we create.
 An game engine for everyone dreaming of creating a pure game world.
 
-梦由大家造。
-让游戏引擎创造纯净的游戏世界。
+
+
 
 ## We Promise that 我们承诺
 
