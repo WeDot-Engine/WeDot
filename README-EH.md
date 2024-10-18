@@ -14,14 +14,14 @@
     </div>
 </div>
 
-## We Promise that
+## We Promise that!
 > No political elements, only focused on pure game development. Make the game engine just a game engine.
 > 
 > Pursuing the simplest happiness and natural beauty.
 > 
 > 2D and 3D cross-platform game engine.
 
-## Current Plan
+## Current Plan!
  1. Integrate the new 3D physics engine [Jolt.](https://github.com/jrouwe/JoltPhysics)
     
  3. Add simple post-processing functions for rendering.
