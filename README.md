@@ -9,7 +9,7 @@
         </a>
     <br>
     <div style="display: flex; justify-content: center;">
-        <a href="链接1的URL" style="margin-right: 10px;">简体中文</a>
+        <a href="https://github.com/QiNuoTu/WeDot/blob/main/README.md" style="margin-right: 10px;">简体中文</a>
         <a href="链接2的URL">English</a>
     </div>
 </div>
