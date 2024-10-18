@@ -2,13 +2,16 @@
     <p align="center">
         <img align="center" src="https://github.com/QiNuoTu/WeDot/blob/main/icon.png" alt="logo" width="200">
     </p>
-    <h1 align="center">Wedot Game Engine</h1>
+    <h1 align="center">Wedot Game Engine<！/h1>
     <p align="center">梦由大家造。让游戏引擎创造纯净的游戏世界：
         <a href="http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=feHFQN3fYumIlOVNF_5nApTLUmuil3jw&authKey=6Z%2BXqXfjmY%2BDfy68m1XOplBkiPA%2FzQ%2Bms0bUDrV2uRcMzj6U%2B0zhVapkTFEMXkau&noverify=0&group_code=112652189">
             联系我们！
         </a>
-    </p>
-    </br>
+    <br>
+    <div style="display: flex; justify-content: center;">
+        <a href="链接1的URL" style="margin-right: 10px;">简体中文</a>
+        <a href="链接2的URL">English</a>
+    </div>
 </div>
 
 ## We Promise that 我们承诺
