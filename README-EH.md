@@ -22,7 +22,7 @@
 > 2D and 3D cross-platform game engine.
 
 ## Current Plan
- 1. Integrate the new 3D physics engine Jolt
+ 1. Integrate the new 3D physics engine [Jolt](https://github.com/jrouwe/JoltPhysics)
     
  3. Add simple post-processing functions for rendering.
     
