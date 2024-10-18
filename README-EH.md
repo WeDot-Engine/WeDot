@@ -10,7 +10,7 @@
     <br> 
     <div style="display: flex; justify-content: center;">
         <a href="https://github.com/QiNuoTu/WeDot/blob/main/README.md" style="margin-right: 10px;">简体中文</a>
-        <a href="链接2的URL">English</a>
+        <a href="https://github.com/QiNuoTu/WeDot/blob/main/README-EH.md">English</a>
     </div>
 </div>
 
