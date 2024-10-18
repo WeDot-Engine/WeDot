@@ -15,43 +15,15 @@
 </div>
 
 ## 我们承诺 We Promise that！
-<div align="center">
-    <p align="center">
-        <img align="center" src="https://github.com/QiNuoTu/WeDot/blob/main/icon.png" alt="logo" width="200">
-    </p>
-    <h1 align="center">WeDot Game Engine</h1>
-    <p align="center">
-        <span style="color: red;">
-            无政治要素，做纯粹的游戏开发引擎，让游戏引擎就是游戏引擎本身。
-            <br>
-            追求引擎的自然美、力求简单的开发体验、造就玩家快乐的游戏开发时光。
-            <br>
-            易用的2D和3D跨平台游戏引擎。
-        </span>
-    </p>
-    <br>
-    <h2 align="center">我们承诺 We Promise that！</h2>
-    <p align="center" style="color: red;">
-        无政治要素，做纯粹的游戏开发引擎，让游戏引擎就是游戏引擎本身。
-        <br>
-        追求引擎的自然美、力求简单的开发体验、造就玩家快乐的游戏开发时光。
-        <br>
-        易用的2D和3D跨平台游戏引擎。
-    </p>
-    <h2 align="center">近期计划 Current Plan！</h2>
-    <ol>
-        <li>集成新的3D物理引擎<a href="https://github.com/jrouwe/JoltPhysics" style="color: red;">Jolt</a>。</li>
-        <li>为渲染添加简单的后处理功能。</li>
-        <li>创建源码教程，让更多人参与开发。</li>
-    </ol>
-</div>
+> 无政治要素，做纯粹的游戏开发引擎，让游戏引擎就是游戏引擎本身。
+> 
+> 追求引擎的自然美、力求简单的开发体验、造就玩家快乐的游戏开发时光。
+> 
+> 易用的2D和3D跨平台游戏引擎。
 
 ## 近期计划 Current Plan！
- 1. 集成新的3D物理引擎[Jolt](https://github.com/jrouwe/JoltPhysics)。
+ 1. 集成新的3D物理引擎[Jolt](https://github.com/jrouwe/JoltPhysics)。 
     
  3. 为渲染添加简单的后处理功能。
     
  5. 创建源码教程，让更多人参与开发。
-
-
-
