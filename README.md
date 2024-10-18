@@ -22,7 +22,7 @@
 > 易用的2D和3D跨平台游戏引擎。
 
 ## Current Plan 近期计划
- 1. 集成新的3D物理引擎Jolt。
+ 1. 集成新的3D物理引擎[Jolt](https://github.com/jrouwe/JoltPhysics)。
     
  3. 为渲染添加简单的后处理功能。
     
