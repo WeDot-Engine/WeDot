@@ -1,4 +1,4 @@
-# Wedot Game Engine - 众点游戏引擎
+# Wedot Game Engine 
 
 We dream, we do, we create.
 An game engine for everyone dreaming of creating a pure game world.
