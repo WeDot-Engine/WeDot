@@ -14,13 +14,6 @@
     </div>
 </div>
 
-[![CLA assistant](https://cla-assistant.io/readme/badge/jrouwe/WeDot)](https://cla-assistant.io/jrouwe/WeDot)
-[![Build Status](https://github.com/jrouwe/WeDot/actions/workflows/build.yml/badge.svg)](https://github.com/jrouwe/WeDot/actions/)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=WeDot&metric=alert_status)](https://sonarcloud.io/dashboard?id=WeDot)
-[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=WeDot&metric=bugs)](https://sonarcloud.io/dashboard?id=WeDot)
-[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=WeDot&metric=code_smells)](https://sonarcloud.io/dashboard?id=WeDot)
-[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=WeDot&metric=coverage)](https://sonarcloud.io/dashboard?id=WeDot)
-
 ## 我们承诺 We Promise that！
 > 无政治要素，做纯粹的游戏开发引擎，让游戏引擎就是游戏引擎本身。
 > 
