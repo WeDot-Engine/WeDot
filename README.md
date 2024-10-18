@@ -14,14 +14,14 @@
     </div>
 </div>
 
-## We Promise that 我们承诺
+## 我们承诺 We Promise that！
 > 无政治要素，做纯粹的游戏开发引擎，让游戏引擎就是游戏引擎本身。
 > 
 > 追求引擎的自然美、力求简单的开发体验、造就玩家快乐的游戏开发时光。
 > 
 > 易用的2D和3D跨平台游戏引擎。
 
-## Current Plan 近期计划
+## 近期计划 Current Plan！
  1. 集成新的3D物理引擎[Jolt](https://github.com/jrouwe/JoltPhysics)。
     
  3. 为渲染添加简单的后处理功能。
