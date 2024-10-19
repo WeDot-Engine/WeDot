@@ -1,6 +1,6 @@
 <div align="center">
     <p align="center">
-        <img align="center" src="icon.png" alt="logo" width="200">
+        <img align="center" src="testicon.png" alt="logo" width="200">
     </p>
     <h1 align="center">Wedot Game Engine</h1>
     <p align="center">梦由大家造。让游戏引擎创造纯净的游戏世界：
