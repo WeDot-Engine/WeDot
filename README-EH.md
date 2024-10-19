@@ -1,6 +1,6 @@
 <div align="center">
     <p align="center">                                 
-        <img align="center" src="https://github.com/QiNuoTu/WeDot/blob/main/icon.png" alt="logo" width="200">
+        <img align="center" src="icon.png" alt="logo" width="200">
     </p>
     <h1 align="center">Wedot Game Engine</h1>
     <p align="center">Dream games, let's create them together：
@@ -9,8 +9,8 @@
         </a>
     <br> 
     <div style="display: flex; justify-content: center;">
-        <a href="https://github.com/QiNuoTu/WeDot/blob/main/README.md" style="margin-right: 10px;">简体中文</a>
-        <a href="https://github.com/QiNuoTu/WeDot/blob/main/README-EH.md">English</a>
+        <a href="README.md" style="margin-right: 10px;">简体中文</a>
+        <a href="README-EH.md">English</a>
     </div>
 </div>
 
