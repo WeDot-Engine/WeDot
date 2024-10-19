@@ -9,8 +9,8 @@
         </a>
     <br>
     <div style="display: flex; justify-content: center;">
-        <a href="https://github.com/QiNuoTu/WeDot/blob/main/README.md" style="margin-right: 10px;">简体中文</a>
-        <a href="https://github.com/QiNuoTu/WeDot/blob/main/README-EH.md">English</a>
+        <a href="README.md" style="margin-right: 10px;">简体中文</a>
+        <a href="README-EH.md">English</a>
     </div>
 </div>
 
