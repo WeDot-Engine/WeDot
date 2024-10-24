@@ -14,16 +14,30 @@
     </div>
 </div>
 
-## 我们承诺 We Promise that！
-> 无政治要素，做纯粹的游戏开发引擎，让游戏引擎就是游戏引擎本身。
-> 
-> 追求引擎的自然美、力求简单的开发体验、造就玩家快乐的游戏开发时光。
-> 
-> 易用的2D和3D跨平台游戏引擎。
+WeDot 是 Godot 的一个分支。WeDot 引擎是一个多平台的 2D 和 3D 游戏引擎，专注于技术和用户体验。它设计得易于使用，使开发者能够专注于游戏本身。
 
-## 近期计划 Current Plan！
- 1. 集成新的3D物理引擎[Jolt](https://github.com/jrouwe/JoltPhysics)。 
-    
- 3. 为渲染添加简单的后处理功能。
-    
- 5. 创建源码教程，让更多人参与开发。
+## 我们的承诺
+
+> **无政治元素**：WeDot 致力于纯粹的游戏开发。让游戏引擎回归游戏的本质。
+>
+> **开源与透明**：我们坚持开源精神，所有开发进展和决策过程都将公开透明。
+>
+> **社区驱动**：我们重视社区的反馈和贡献，鼓励开发者参与引擎的改进和发展。
+
+## 当前计划
+
+1. 集成新的 3D 物理引擎 [Jolt.](https://github.com/jrouwe/JoltPhysics)
+2. 添加简单的后处理功能以增强渲染效果。
+3. 创建源代码教程，吸引更多人加入我们的社区。
+4. 优化性能，提高引擎在不同平台上的运行效率。
+5. 扩展文档，提供更详细的使用指南和技术支持。
+
+<p align="center">
+    <a href="https://github.com/Wedot-Engine/WeDot"><img alt="Github repo" src="https://img.shields.io/website?url=https%3A%2F%2Fgithub.com%2FPJ-568%2Fqmole-source-site&up_color=007bff&up_message=Wedot-Engine/WeDot&logo=github&label=Github" loading="lazy"></a>
+    <a href="https://github.com/Wedot-Engine/WeDot/blob/main/LICENSE.txt"><img alt="GitHub License" src="https://img.shields.io/github/license/Wedot-Engine/WeDot?logo=github&color=e48c5c" loading="lazy"></a>
+    <a href="https://gitee.com/Wedot-Engine/WeDot"><img alt="Gitee repo" src="https://img.shields.io/website?url=https%3A%2F%2Fgitee.com%2FPJ-568%2Fqmole-source-site&up_color=007bff&up_message=Wedot-Engine/WeDot&logo=gitee&label=Gitee" loading="lazy"></a>
+</p>
+
+![Current](https://repobeats.axiom.co/api/embed/e8d7fcfa4529d0f4a1a8383ced8d3cd7d2f50099.svg "Repobeats analytics image")
+
+[访问](https://wedot-engine.github.io)
