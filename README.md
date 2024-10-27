@@ -1,5 +1,5 @@
 <p align="center">
-    <img width="128" src="https://wedot-engine.github.io/img/wedot.png" alt="WeDot Engine Logo" />
+    <img width="200" src="./LogoImages/Logo包含文字横版_4698x3132.png" alt="WeDot Engine Logo" />
 </p>
 <h1 align="center">WeDot Engine</h1>
 
