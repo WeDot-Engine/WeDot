@@ -1,7 +1,8 @@
+# WeDot Engine
+
 <p align="center">
     <img width="400" height="300" src="./LogoImages/Logo包含文字横版_4698x3132.png" alt="WeDot Engine Logo" />
 </p>
-<h1 align="center">WeDot Engine</h1>
 
 > 🌏 简体中文 | [English](./README_EN.md)
 
