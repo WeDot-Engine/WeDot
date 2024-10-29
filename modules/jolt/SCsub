@@ -1,0 +1,23 @@
+# SCsub
+
+Import("env")
+Import("env_modules")
+
+env_jolt = env_modules.Clone()  # 为jolt模块克隆一个环境
+
+thirdparty_obj = [] # 第三方源文件构建出来的对象文件列表
+thirdparty_dir = "#thirdparty/libjolt/" # 第三方源文件的路径
+thirdparty_sources = Glob(thirdparty_dir + 'Jolt/**/*.cpp')  # 递归查找第三方源文件
+
+env_jolt.Prepend(CPPPATH=[thirdparty_dir])  # 将第三方源文件的路径添加该模块的环境当中，这样我们就能在该模块内使用第三方源文件
+
+env_thirdparty = env_jolt.Clone()  # 为第三方库克隆一个环境
+env_thirdparty.disable_warnings()  # 禁用警告
+env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)  # 将第三方源文件添加到构建中并将构建出来的对象文件保存到 thirdparty_obj 中
+env.modules_sources += thirdparty_obj  # 将第三方源文件的对象文件链接到模块源
+
+module_obj = [] # 模块源文件构建出来的对象文件列表
+env_jolt.add_source_files(module_obj, "*.cpp")  # 将模块的所有 cpp 文件保存到 module_obj 中
+env.modules_sources += module_obj  # 将模块源文件的构建结果链接到模块源
+
+env.Depends(module_obj, thirdparty_obj)  # 当第三方库更新时，强制重新构建模块文件
