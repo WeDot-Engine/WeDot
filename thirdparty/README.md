@@ -440,6 +440,20 @@ Files extracted from upstream source:
 - `LICENSE`
 
 
+## libjolt
+
+- Upstream: https://github.com/jrouwe/JoltPhysics
+- Version: 5.1.0 (cede24d2733a4a473c6d486650ca9b6d0481681a, 2024)
+- License: MIT
+
+Files extracted from upstream source:
+
+- `*.{c,h}`
+- `LICENSE`
+- `README.md`
+- `ContributorAgreement.md`
+
+
 ## libktx
 
 - Upstream: https://github.com/KhronosGroup/KTX-Software
