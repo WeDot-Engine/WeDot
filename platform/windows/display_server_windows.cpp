@@ -2096,6 +2096,10 @@ void DisplayServerWindows::_update_window_style(WindowID p_window, bool p_repain
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
+	if (!wd.visible) {
+		return;
+	}
+
 	DWORD style = 0;
 	DWORD style_ex = 0;
 
@@ -2149,6 +2153,16 @@ void DisplayServerWindows::window_set_mode(WindowMode p_mode, WindowID p_window)
 			SystemParametersInfoA(SPI_SETMOUSETRAILS, restore_mouse_trails, nullptr, 0);
 			restore_mouse_trails = 0;
 		}
+	}
+
+	if (p_mode == WINDOW_MODE_HIDE) {
+		ShowWindow(wd.hWnd, SW_HIDE);
+		wd.visible = false;
+	}
+
+	if (p_mode == WINDOW_MODE_SHOW) {
+		ShowWindow(wd.hWnd, SW_SHOW);
+		wd.visible = true;
 	}
 
 	if (p_mode == WINDOW_MODE_WINDOWED) {
