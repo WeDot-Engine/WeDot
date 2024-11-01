@@ -1,17 +1,18 @@
+# [WeDot Engine](https://wedot.top)
+
 <p align="center">
-    <img width="128" src="logo/wedot-icon_transparent.svg" alt="WeDot Engine Logo" />
+    <img width="400" src="logo/wedot-logo2_text-transparent.svg" alt="WeDot Engine Logo" />
 </p>
-<h1 align="center">WeDot Engine</h1>
-
-> 🌏 [简体中文](./README.md) | English
-
-WeDot is a fork of Godot. WeDot Engine is a multi-platform 2D and 3D game engine focused solely on technology and user experience. It is designed to be easy to use and to allow developers to focus on their games.
 
 <p align="center">
     <a href="https://github.com/Wedot-Engine/WeDot"><img alt="Github repo" src="https://img.shields.io/website?url=https%3A%2F%2Fgithub.com%2FPJ-568%2Fqmole-source-site&up_color=007bff&up_message=Wedot-Engine/WeDot&logo=github&label=Github" loading="lazy"></a>
     <a href="https://github.com/Wedot-Engine/WeDot/blob/main/LICENSE.txt"><img alt="GitHub License" src="https://img.shields.io/github/license/Wedot-Engine/WeDot?logo=github&color=e48c5c" loading="lazy"></a>
     <a href="https://gitee.com/Wedot-Engine/WeDot"><img alt="Gitee repo" src="https://img.shields.io/website?url=https%3A%2F%2Fgitee.com%2FPJ-568%2Fqmole-source-site&up_color=007bff&up_message=Wedot-Engine/WeDot&logo=gitee&label=Gitee" loading="lazy"></a>
 </p>
+
+> 🌏 [简体中文](./README.md) | English
+
+WeDot is a fork of Godot. WeDot Engine is a multi-platform 2D and 3D game engine focused solely on technology and user experience. It is designed to be easy to use and to allow developers to focus on their games.
 
 ## We Promise
 
@@ -29,11 +30,15 @@ WeDot is a fork of Godot. WeDot Engine is a multi-platform 2D and 3D game engine
 4. Optimize performance to improve engine efficiency across different platforms.
 5. Expand documentation to provide more detailed usage guides and technical support.
 
+## how Maintain
+
+- [贡献指北-简体中文](./CONTRIBUTING.md)
+- [PJ568 git-commit-regulation](https://github.com/PJ-568/git-commit-regulation)
+	- [PJ568 提交说明规范 v 0.1.2-简体中文](https://github.com/PJ-568/git-commit-regulation/blob/master/README.md)
+ 
 ## Contact
 
-- [Website](https://wedot.top)
-- [QQ Group](https://qm.qq.com/cgi-bin/qm/qr?authKey=G%2BR%2FKlLQBeH71b1Mhe4t2gM%2B8rLXndOEPhPtDgWgTudLUtGUgpMrNAWD87x%2F64ta&k=IPTGQ3zH_W8IAzaFrnLLGF2kplhv-EeM&noverify=0&group_code=670915303)
-- [Discord](https://discord.com/invite/MRssAz6Pe3)
+- [Website](https://wedot.top) | [QQ Group](https://qm.qq.com/cgi-bin/qm/qr?authKey=G%2BR%2FKlLQBeH71b1Mhe4t2gM%2B8rLXndOEPhPtDgWgTudLUtGUgpMrNAWD87x%2F64ta&k=IPTGQ3zH_W8IAzaFrnLLGF2kplhv-EeM&noverify=0&group_code=670915303) | [Discord](https://discord.com/invite/MRssAz6Pe3)
 
 ## Status
 

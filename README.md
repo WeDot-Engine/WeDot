@@ -1,17 +1,18 @@
+# [WeDot Engine](https://wedot.top)
+
 <p align="center">
-    <img width="128" src="logo/wedot-icon_transparent.svg" alt="WeDot Engine Logo" />
+    <img width="400" src="logo/wedot-logo2_text-transparent.svg" alt="WeDot Engine Logo" />
 </p>
-<h1 align="center">WeDot Engine</h1>
-
-> 🌏 简体中文 | [English](./README_EN.md)
-
-WeDot 是 Godot 的一个分支。WeDot 引擎是一个多平台的 2D 和 3D 游戏引擎，专注于技术和用户体验。它设计得易于使用，使开发者能够专注于游戏本身。
 
 <p align="center">
     <a href="https://github.com/Wedot-Engine/WeDot"><img alt="Github repo" src="https://img.shields.io/website?url=https%3A%2F%2Fgithub.com%2FPJ-568%2Fqmole-source-site&up_color=007bff&up_message=Wedot-Engine/WeDot&logo=github&label=Github" loading="lazy"></a>
     <a href="https://github.com/Wedot-Engine/WeDot/blob/main/LICENSE.txt"><img alt="GitHub License" src="https://img.shields.io/github/license/Wedot-Engine/WeDot?logo=github&color=e48c5c" loading="lazy"></a>
     <a href="https://gitee.com/Wedot-Engine/WeDot"><img alt="Gitee repo" src="https://img.shields.io/website?url=https%3A%2F%2Fgitee.com%2FPJ-568%2Fqmole-source-site&up_color=007bff&up_message=Wedot-Engine/WeDot&logo=gitee&label=Gitee" loading="lazy"></a>
 </p>
+
+> 🌏 简体中文 | [English](./README_EN.md)
+
+WeDot 是 Godot 的一个分支。WeDot 引擎是一个多平台的 2D 和 3D 游戏引擎，专注于技术和用户体验。它设计得易于使用，使开发者能够专注于游戏本身。
 
 ## 我们承诺
 
@@ -28,12 +29,16 @@ WeDot 是 Godot 的一个分支。WeDot 引擎是一个多平台的 2D 和 3D �
 3. 创建源代码教程，吸引更多人加入我们的社区。
 4. 优化性能，提高引擎在不同平台上的运行效率。
 5. 扩展文档，提供更详细的使用指南和技术支持。
+   
+## 如何维护
+
+- [贡献指北-简体中文](./CONTRIBUTING.md)
+- [PJ568 git-commit-regulation](https://github.com/PJ-568/git-commit-regulation)
+	- [PJ568 提交说明规范 v 0.1.2-简体中文](https://github.com/PJ-568/git-commit-regulation/blob/master/README.md)
 
 ## 交流方式
 
-- [网站](https://wedot.top)
-- [QQ 群](https://qm.qq.com/cgi-bin/qm/qr?authKey=G%2BR%2FKlLQBeH71b1Mhe4t2gM%2B8rLXndOEPhPtDgWgTudLUtGUgpMrNAWD87x%2F64ta&k=IPTGQ3zH_W8IAzaFrnLLGF2kplhv-EeM&noverify=0&group_code=670915303)
-- [Discord](https://discord.com/invite/MRssAz6Pe3)
+- [网站](https://wedot.top) | [QQ 群](https://qm.qq.com/cgi-bin/qm/qr?authKey=G%2BR%2FKlLQBeH71b1Mhe4t2gM%2B8rLXndOEPhPtDgWgTudLUtGUgpMrNAWD87x%2F64ta&k=IPTGQ3zH_W8IAzaFrnLLGF2kplhv-EeM&noverify=0&group_code=670915303) | [Discord](https://discord.com/invite/MRssAz6Pe3)
 
 ## 当前状态
 
