@@ -1,7 +1,7 @@
 # WeDot Engine
 
 <p align="center">
-    <img width="128" src="logo/wedot-logo2_text-transparent.svg" alt="WeDot Engine Logo" />
+    <img width="400" src="logo/wedot-logo2_text-transparent.svg" alt="WeDot Engine Logo" />
 </p>
 
 > 🌏 简体中文 | [English](./README_EN.md)
