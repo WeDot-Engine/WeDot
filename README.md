@@ -1,4 +1,4 @@
-# [WeDot Engine](https://wedot-engine.github.io)
+# [WeDot Engine](https://wedot.top)
 
 <p align="center">
     <img width="400" src="logo/wedot-logo2_text-transparent.svg" alt="WeDot Engine Logo" />
