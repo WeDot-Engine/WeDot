@@ -4,15 +4,15 @@
     <img width="400" src="logo/wedot-logo2_text-transparent.svg" alt="WeDot Engine Logo" />
 </p>
 
-> 🌏 [简体中文](./README.md) | English
-
-WeDot is a fork of Godot. WeDot Engine is a multi-platform 2D and 3D game engine focused solely on technology and user experience. It is designed to be easy to use and to allow developers to focus on their games.
-
 <p align="center">
     <a href="https://github.com/Wedot-Engine/WeDot"><img alt="Github repo" src="https://img.shields.io/website?url=https%3A%2F%2Fgithub.com%2FPJ-568%2Fqmole-source-site&up_color=007bff&up_message=Wedot-Engine/WeDot&logo=github&label=Github" loading="lazy"></a>
     <a href="https://github.com/Wedot-Engine/WeDot/blob/main/LICENSE.txt"><img alt="GitHub License" src="https://img.shields.io/github/license/Wedot-Engine/WeDot?logo=github&color=e48c5c" loading="lazy"></a>
     <a href="https://gitee.com/Wedot-Engine/WeDot"><img alt="Gitee repo" src="https://img.shields.io/website?url=https%3A%2F%2Fgitee.com%2FPJ-568%2Fqmole-source-site&up_color=007bff&up_message=Wedot-Engine/WeDot&logo=gitee&label=Gitee" loading="lazy"></a>
 </p>
+
+> 🌏 [简体中文](./README.md) | English
+
+WeDot is a fork of Godot. WeDot Engine is a multi-platform 2D and 3D game engine focused solely on technology and user experience. It is designed to be easy to use and to allow developers to focus on their games.
 
 ## We Promise
 
