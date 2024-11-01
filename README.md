@@ -29,18 +29,17 @@ WeDot 是 Godot 的一个分支。WeDot 引擎是一个多平台的 2D 和 3D �
 3. 创建源代码教程，吸引更多人加入我们的社区。
 4. 优化性能，提高引擎在不同平台上的运行效率。
 5. 扩展文档，提供更详细的使用指南和技术支持。
+## 如何维护
+
+> [PJ568 git-commit-regulation](https://github.com/PJ-568/git-commit-regulation)
+> 
+> > [PJ568 提交说明规范 v 0.1.2-简体中文](https://github.com/PJ-568/git-commit-regulation/blob/master/README.md)
 
 ## 交流方式
 
 - [网站](https://wedot.top)
 - [QQ 群](https://qm.qq.com/cgi-bin/qm/qr?authKey=G%2BR%2FKlLQBeH71b1Mhe4t2gM%2B8rLXndOEPhPtDgWgTudLUtGUgpMrNAWD87x%2F64ta&k=IPTGQ3zH_W8IAzaFrnLLGF2kplhv-EeM&noverify=0&group_code=670915303)
 - [Discord](https://discord.com/invite/MRssAz6Pe3)
-
-## 如何维护
-
-> [PJ568 git-commit-regulation](https://github.com/PJ-568/git-commit-regulation)
-> 
-> > [PJ568 提交说明规范 v 0.1.2-简体中文](https://github.com/PJ-568/git-commit-regulation/blob/master/README.md)
 
 ## 当前状态
 
