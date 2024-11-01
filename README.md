@@ -36,6 +36,10 @@ WeDot 是 Godot 的一个分支。WeDot 引擎是一个多平台的 2D 和 3D �
 - [QQ 群](https://qm.qq.com/cgi-bin/qm/qr?authKey=G%2BR%2FKlLQBeH71b1Mhe4t2gM%2B8rLXndOEPhPtDgWgTudLUtGUgpMrNAWD87x%2F64ta&k=IPTGQ3zH_W8IAzaFrnLLGF2kplhv-EeM&noverify=0&group_code=670915303)
 - [Discord](https://discord.com/invite/MRssAz6Pe3)
 
+## 如何维护
+
+> [PJ568 提交说明规范 v 0.1.2](https://github.com/PJ-568/git-commit-regulation)
+
 ## 当前状态
 
 ![Current](https://repobeats.axiom.co/api/embed/e8d7fcfa4529d0f4a1a8383ced8d3cd7d2f50099.svg "Repobeats analytics image")
