@@ -31,9 +31,8 @@ WeDot 是 Godot 的一个分支。WeDot 引擎是一个多平台的 2D 和 3D �
 5. 扩展文档，提供更详细的使用指南和技术支持。
 ## 如何维护
 
-> [PJ568 git-commit-regulation](https://github.com/PJ-568/git-commit-regulation)
-> 
-> > [PJ568 提交说明规范 v 0.1.2-简体中文](https://github.com/PJ-568/git-commit-regulation/blob/master/README.md)
+- [PJ568 git-commit-regulation](https://github.com/PJ-568/git-commit-regulation)
+	- [PJ568 提交说明规范 v 0.1.2-简体中文](https://github.com/PJ-568/git-commit-regulation/blob/master/README.md)
 
 ## 交流方式
 
