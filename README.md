@@ -1,8 +1,9 @@
-# WeDot Engine
+# (WeDot Engine)[https://wedot-engine.github.io/]
 
 <p align="center">
     <img width="400" src="logo/wedot-logo2_text-transparent.svg" alt="WeDot Engine Logo" />
 </p>
+
 <p align="center">
     <a href="https://github.com/Wedot-Engine/WeDot"><img alt="Github repo" src="https://img.shields.io/website?url=https%3A%2F%2Fgithub.com%2FPJ-568%2Fqmole-source-site&up_color=007bff&up_message=Wedot-Engine/WeDot&logo=github&label=Github" loading="lazy"></a>
     <a href="https://github.com/Wedot-Engine/WeDot/blob/main/LICENSE.txt"><img alt="GitHub License" src="https://img.shields.io/github/license/Wedot-Engine/WeDot?logo=github&color=e48c5c" loading="lazy"></a>
