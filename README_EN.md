@@ -32,10 +32,9 @@ WeDot is a fork of Godot. WeDot Engine is a multi-platform 2D and 3D game engine
 
 ## how Maintain
 
-> [PJ568 git-commit-regulation](https://github.com/PJ-568/git-commit-regulation)
-> 
-> > [PJ568 提交说明规范 v 0.1.2-简体中文](https://github.com/PJ-568/git-commit-regulation/blob/master/README.md)
-
+- [PJ568 git-commit-regulation](https://github.com/PJ-568/git-commit-regulation)
+	- [PJ568 提交说明规范 v 0.1.2-简体中文](https://github.com/PJ-568/git-commit-regulation/blob/master/README.md)
+ - 
 ## Contact
 
 - [Website](https://wedot.top)
