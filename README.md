@@ -1,5 +1,3 @@
-# [WeDot Engine](https://wedot.top)
-
 <h1 align="center">
   <a href="https://wedot.top"><img width="400" src="logo/wedot-logo2_text-transparent.svg" alt="WeDot Engine Logo" /></a>
 </h1>
