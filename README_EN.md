@@ -34,7 +34,7 @@ WeDot is a fork of Godot. WeDot Engine is a multi-platform 2D and 3D game engine
  
 ## Contact
 
-- [Website](https://wedot.top)
+
 - [QQ Group](https://qm.qq.com/cgi-bin/qm/qr?authKey=G%2BR%2FKlLQBeH71b1Mhe4t2gM%2B8rLXndOEPhPtDgWgTudLUtGUgpMrNAWD87x%2F64ta&k=IPTGQ3zH_W8IAzaFrnLLGF2kplhv-EeM&noverify=0&group_code=670915303)
 - [Discord](https://discord.com/invite/MRssAz6Pe3)
 
