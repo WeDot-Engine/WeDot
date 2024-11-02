@@ -2063,6 +2063,14 @@
 			[b]On Linux (X11):[/b] Exclusive full screen mode bypasses compositor.
 			[b]Note:[/b] Regardless of the platform, enabling full screen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling full screen mode.
 		</constant>
+		<constant name="WINDOW_MODE_HIDE" value="5" enum="WindowMode">
+			[b]Note:[/b] 仅实现 windows 平台.
+			设置窗口模式为隐藏窗口,一般用于隐藏主窗口,包括隐藏任务栏图标.
+			正确的取消隐藏,需要使用 WINDOW_MODE_SHOW 设置窗口模式.
+		</constant>
+		<constant name="WINDOW_MODE_SHOW" value="6" enum="WindowMode">
+			设置窗口模式为显示窗口,一般用于取消窗口隐藏.
+		</constant>
 		<constant name="WINDOW_FLAG_RESIZE_DISABLED" value="0" enum="WindowFlags">
 			The window can't be resized by dragging its resize grip. It's still possible to resize the window using [method window_set_size]. This flag is ignored for full screen windows.
 		</constant>
