@@ -937,7 +937,7 @@ def make_md_class(class_def: ClassDef, state: State, dry_run: bool, output_dir: 
         # Document reference id and header.
         # 【覆写】锚点
         # f.write(f".. _class_{class_name}:\n\n")
-        f.write(f"<div id=\"_class_{class_name}\"></div>\n\n")
+        f.write(f"<div id=\"_class_{class_name.lower()}\"></div>\n\n")
         f.write(make_heading(class_name, "=", False))
 
         f.write(make_deprecated_experimental(class_def, state))
@@ -963,7 +963,10 @@ def make_md_class(class_def: ClassDef, state: State, dry_run: bool, output_dir: 
                     break
             f.write("\n\n")
 
-        # TODO 【PJ568】的进度：正在重写 make_系列() 和 format_codeblock() 中代码有默认四个空格的缩进问题，还有 make_method_signature() 等的双反斜杠问题
+        # TODO【PJ568】的进度：
+        # 正在重写 make_系列()
+        # format_codeblock() 中代码有默认四个空格的缩进问题
+        # make_method_signature() 等的双反斜杠问题
         # Descendants
         inherited: List[str] = []
         for c in state.classes.values():
@@ -1131,10 +1134,10 @@ def make_md_class(class_def: ClassDef, state: State, dry_run: bool, output_dir: 
                 signal_anchor = f"class_{class_name}_signal_{signal.name}"
                 # 【覆写】锚点
                 # f.write(f".. _{signal_anchor}:\n\n")
-                f.write(f"<div id=\"_class_{signal_anchor}\"></div>\n\n")
+                f.write(f"<div id=\"_class_{signal_anchor.lower()}\"></div>\n\n")
                 # 【覆写】锚点
                 # self_link = f":ref:`🔗<{signal_anchor}>`"
-                self_link = f"<div id=\"{signal_anchor}\"></div>"
+                self_link = f"<div id=\"{signal_anchor.lower()}\"></div>"
                 # 【注释】Markdown 中没有
                 # f.write(".. rst-class:: classref-signal\n\n")
 
@@ -1177,10 +1180,10 @@ def make_md_class(class_def: ClassDef, state: State, dry_run: bool, output_dir: 
                 enum_anchor = f"enum_{class_name}_{e.name}"
                 # 【覆写】锚点
                 # f.write(f".. _{enum_anchor}:\n\n")
-                f.write(f"<div id=\"_class_{enum_anchor}\"></div>\n\n")
+                f.write(f"<div id=\"_class_{enum_anchor.lower()}\"></div>\n\n")
                 # 【覆写】锚点
                 # self_link = f":ref:`🔗<{enum_anchor}>`"
-                self_link = f"<div id=\"{enum_anchor}\"></div>"
+                self_link = f"<div id=\"{enum_anchor.lower()}\"></div>"
                 # 【注释】Markdown 中没有
                 # f.write(".. rst-class:: classref-enumeration\n\n")
 
@@ -1194,7 +1197,7 @@ def make_md_class(class_def: ClassDef, state: State, dry_run: bool, output_dir: 
 
                     # 【覆写】锚点
                     # f.write(f".. _class_{class_name}_constant_{value.name}:\n\n")
-                    f.write(f"<div id=\"_class_{class_name}_constant_{value.name}\"></div>\n\n")
+                    f.write(f"<div id=\"_class_{class_name.lower()}_constant_{value.name.lower()}\"></div>\n\n")
                     # 【注释】Markdown 中没有
                     # f.write(".. rst-class:: classref-enumeration-constant\n\n")
 
@@ -1233,10 +1236,10 @@ def make_md_class(class_def: ClassDef, state: State, dry_run: bool, output_dir: 
                 constant_anchor = f"class_{class_name}_constant_{constant.name}"
                 # 【覆写】锚点
                 # f.write(f".. _{constant_anchor}:\n\n")
-                f.write(f"<div id=\"_{constant_anchor}\"></div>\n\n")
+                f.write(f"<div id=\"_{constant_anchor.lower()}\"></div>\n\n")
                 # 【覆写】锚点
                 # self_link = f":ref:`🔗<{constant_anchor}>`"
-                self_link = f"<div id=\"{constant_anchor}\"></div>"
+                self_link = f"<div id=\"{constant_anchor.lower()}\"></div>"
                 # 【注释】Markdown 中没有
                 # f.write(".. rst-class:: classref-constant\n\n")
 
@@ -1279,10 +1282,10 @@ def make_md_class(class_def: ClassDef, state: State, dry_run: bool, output_dir: 
                         annotation_anchor = f"class_{class_name}_annotation_{m.name}"
                         # 【覆写】锚点
                         # f.write(f".. _{annotation_anchor}:\n\n")
-                        f.write(f"<div id=\"_{annotation_anchor}\"></div>\n\n")
+                        f.write(f"<div id=\"_{annotation_anchor.lower()}\"></div>\n\n")
                         # 【覆写】锚点
                         # self_link = f" :ref:`🔗<{annotation_anchor}>`"
-                        self_link = f"<div id=\"{annotation_anchor}\"></div>"
+                        self_link = f"<div id=\"{annotation_anchor.lower()}\"></div>"
 
                     # 【注释】Markdown 中没有
                     # f.write(".. rst-class:: classref-annotation\n\n")
@@ -1327,10 +1330,10 @@ def make_md_class(class_def: ClassDef, state: State, dry_run: bool, output_dir: 
                 property_anchor = f"class_{class_name}_property_{property_def.name}"
                 # 【覆写】锚点
                 # f.write(f".. _{property_anchor}:\n\n")
-                f.write(f"<div id=\"_{property_anchor}\"></div>\n\n")
+                f.write(f"<div id=\"_{property_anchor.lower()}\"></div>\n\n")
                 # 【覆写】锚点
                 # self_link = f":ref:`🔗<{property_anchor}>`"
-                self_link = f"<div id=\"{property_anchor}\"></div>"
+                self_link = f"<div id=\"{property_anchor.lower()}\"></div>"
                 # 【注释】Markdown 中没有
                 # f.write(".. rst-class:: classref-property\n\n")
 
@@ -1401,10 +1404,10 @@ def make_md_class(class_def: ClassDef, state: State, dry_run: bool, output_dir: 
                         constructor_anchor = f"class_{class_name}_constructor_{m.name}"
                         # 【覆写】锚点
                         # f.write(f".. _{constructor_anchor}:\n\n")
-                        f.write(f"<div id=\"_{constructor_anchor}\"></div>\n\n")
+                        f.write(f"<div id=\"_{constructor_anchor.lower()}\"></div>\n\n")
                         # 【覆写】锚点
                         # self_link = f" :ref:`🔗<{constructor_anchor}>`"
-                        self_link = f"<div id=\"{constructor_anchor}\"></div>"
+                        self_link = f"<div id=\"{constructor_anchor.lower()}\"></div>"
 
                     # 【注释】Markdown 中没有
                     # f.write(".. rst-class:: classref-constructor\n\n")
@@ -1454,10 +1457,10 @@ def make_md_class(class_def: ClassDef, state: State, dry_run: bool, output_dir: 
                         method_anchor = f"class_{class_name}_{method_qualifier}method_{m.name}"
                         # 【覆写】锚点
                         # f.write(f".. _{method_anchor}:\n\n")
-                        f.write(f"<div id=\"_{method_anchor}\"></div>\n\n")
+                        f.write(f"<div id=\"_{method_anchor.lower()}\"></div>\n\n")
                         # 【覆写】锚点
                         # self_link = f" :ref:`🔗<{method_anchor}>`"
-                        self_link = f"<div id=\"{method_anchor}\"></div>"
+                        self_link = f"<div id=\"{method_anchor.lower()}\"></div>"
 
                     # 【注释】Markdown 中没有
                     # f.write(".. rst-class:: classref-method\n\n")
@@ -1504,10 +1507,10 @@ def make_md_class(class_def: ClassDef, state: State, dry_run: bool, output_dir: 
                         operator_anchor += f"_{parameter.type_name.type_name}"
                     # 【覆写】锚点
                     # f.write(f".. _{operator_anchor}:\n\n")
-                    f.write(f"<div id=\"_{operator_anchor}\"></div>\n\n")
+                    f.write(f"<div id=\"_{operator_anchor.lower()}\"></div>\n\n")
                     # 【覆写】锚点
                     # self_link = f":ref:`🔗<{operator_anchor}>`"
-                    self_link = f"<div id=\"{operator_anchor}\"></div>"
+                    self_link = f"<div id=\"{operator_anchor.lower()}\"></div>"
 
                     # 【注释】Markdown 中没有
                     # f.write(".. rst-class:: classref-operator\n\n")
@@ -1551,10 +1554,10 @@ def make_md_class(class_def: ClassDef, state: State, dry_run: bool, output_dir: 
                 theme_item_anchor = f"class_{class_name}_theme_{theme_item_def.data_name}_{theme_item_def.name}"
                 # 【覆写】锚点
                 # f.write(f".. _{theme_item_anchor}:\n\n")
-                f.write(f"<div id=\"_{theme_item_anchor}\"></div>\n\n")
+                f.write(f"<div id=\"_{theme_item_anchor.lower()}\"></div>\n\n")
                 # 【覆写】锚点
                 # self_link = f":ref:`🔗<{theme_item_anchor}>`"
-                self_link = f"<div id=\"{theme_item_anchor}\"></div>"
+                self_link = f"<div id=\"{theme_item_anchor.lower()}\"></div>"
                 # 【注释】Markdown 中没有
                 # f.write(".. rst-class:: classref-themeproperty\n\n")
 
@@ -1611,7 +1614,7 @@ def make_md_class(class_def: ClassDef, state: State, dry_run: bool, output_dir: 
 #     return type_rst
 def make_type(klass: str, state: State) -> str:
     if klass.find("*") != -1:  # Pointer, ignore
-        return f"``{klass}``"
+        return f"`{klass}`"
 
     link_type = klass
     is_array = False
@@ -1682,9 +1685,9 @@ def make_enum(t: str, is_bitfield: bool, state: State) -> str:
         if is_bitfield:
             if not state.classes[c].enums[e].is_bitfield:
                 print_error(f'{state.current_class}.xml: Enum "{t}" is not bitfield.', state)
-            return f"[{e}](#enum_{c}_{e})"
+            return f"[{e}](#enum_{c.lower()}_{e.lower()})"
         else:
-            return f"[{e}](#enum_{c}_{e})"
+            return f"[{e}](#enum_{c.lower()}_{e.lower()})"
 
     # Don't fail for `Vector3.Axis`, as this enum is a special case which is expected not to be resolved.
     if f"{c}.{e}" != "Vector3.Axis":
@@ -1775,9 +1778,9 @@ def make_method_signature(
             ref_type_qualifier = ""
             if definition.name.startswith("_"):
                 ref_type_qualifier = "private_"
-            out += f"[`{definition.name}`](#class_{class_def.name}_{ref_type_qualifier}{ref_type}_{definition.name})"
+            out += f"[`{definition.name}`](#class_{class_def.name.lower()}_{ref_type_qualifier.lower()}{ref_type.lower()}_{definition.name.lower()})"
         else:
-            out += f"[`{definition.name}`](#class_{class_def.name}_{ref_type}_{definition.name})"
+            out += f"[`{definition.name}`](#class_{class_def.name.lower()}_{ref_type.lower()}_{definition.name.lower()})"
     else:
         out += f"**{definition.name}**"
 
@@ -1805,7 +1808,7 @@ def make_method_signature(
         # Use substitutions for abbreviations. This is used to display tooltips on hover.
         # See `make_footer()` for descriptions.
         for qualifier in qualifiers.split():
-            out += f" |{qualifier}|"
+            out += f" {qualifier}[^{qualifier}]"
 
     return ret_type, out
 
@@ -2145,7 +2148,7 @@ def format_text_block(
             result = format_codeblock(tag_state, post_text, indent_level, state)
             if result is None:
                 return ""
-            text = f"{pre_text}{result[0]}\n```"
+            text = f"{pre_text}{result[0]}\n"
             pos += result[1] - indent_level
 
         # Handle normal text
@@ -2650,7 +2653,7 @@ def format_text_block(
                     tag_depth -= 1
                     escape_post = True
                 else:
-                    tag_text = ":kbd:" + tag_text
+                    tag_text = "<i class=\"fa fa-gamepad\"></i>" + tag_text
                     tag_depth += 1
                     escape_pre = True
 
@@ -2794,7 +2797,9 @@ def format_codeblock(
         else:
             code_text = f"{code_text[:code_pos]}\n    {code_text[code_pos + to_skip + 1 :]}"
             code_pos += 5 - to_skip
-    return (f"\n[{opening_formatted}]{code_text}{post_text}", len(f"\n[{opening_formatted}]{code_text}"))
+    # 【覆写】增加代码块结束标记
+    # return (f"\n[{opening_formatted}]{code_text}{post_text}", len(f"\n[{opening_formatted}]{code_text}"))
+    return (f"\n[{opening_formatted}]{code_text}```{post_text}", len(f"\n[{opening_formatted}]{code_text}"))
 
 
 def format_table(f: TextIO, data: List[Tuple[Optional[str], ...]], remove_empty_columns: bool = False) -> None:
@@ -2832,7 +2837,7 @@ def format_table(f: TextIO, data: List[Tuple[Optional[str], ...]], remove_empty_
     # Draw the first separator.
     # 无需缩进 
     # f.write(f"   {sep}")
-    f.write(f"{sep}")
+    # f.write(f"{sep}")
 
     # Draw each row and close it with a separator.
     for row in data:
@@ -2847,7 +2852,7 @@ def format_table(f: TextIO, data: List[Tuple[Optional[str], ...]], remove_empty_
         # f.write(f"   {row_text}")
         # f.write(f"   {sep}")
         f.write(f"{row_text}")
-        f.write(f"{sep}")
+        # f.write(f"{sep}")
 
     f.write("\n")
 
