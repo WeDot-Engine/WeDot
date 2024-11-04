@@ -465,11 +465,11 @@ class TypeName:
         self.enum = enum
         self.is_bitfield = is_bitfield
 
-    def to_rst(self, state: State) -> str:
+    def to_md(self, state: State) -> str:
         if self.enum is not None:
             return make_enum(self.enum, self.is_bitfield, state)
         elif self.type_name == "void":
-            return "|void|"
+            return "`void`"
         else:
             return make_type(self.type_name, state)
 
@@ -674,10 +674,10 @@ class ScriptLanguageParityCheck:
         self.hit_map[class_name].append((context, error))
 
 
-# Entry point for the RST generator.
+# Entry point for the MD generator.
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("path", nargs="+", help="A path to an XML file or a directory containing XML files to parse.")
+    parser.add_argument("path", nargs="+", help="XML 文件或存在的目录的路径。")
     parser.add_argument("--filter", default="", help="The filepath pattern for XML files to filter.")
     parser.add_argument("--lang", "-l", default="en", help="Language to use for section headings.")
     parser.add_argument(
@@ -686,7 +686,7 @@ def main() -> None:
         help="If passed, force colored output even if stdout is not a TTY (useful for continuous integration).",
     )
     group = parser.add_mutually_exclusive_group()
-    group.add_argument("--output", "-o", default=".", help="The directory to save output .rst files in.")
+    group.add_argument("--output", "-o", default=".", help="The directory to save output .md files in.")
     group.add_argument(
         "--dry-run",
         action="store_true",
@@ -726,6 +726,7 @@ def main() -> None:
     STYLES["reset"] = "\x1b[0m" if should_color else ""
 
     # Retrieve heading translations for the given language.
+    # 根据给定的语言，检索标题翻译。
     if not args.dry_run and args.lang != "en":
         lang_file = os.path.join(
             os.path.dirname(os.path.realpath(__file__)), "..", "translations", "{}.po".format(args.lang)
@@ -744,12 +745,14 @@ def main() -> None:
         else:
             print(f'No PO file at "{lang_file}" for language "{args.lang}".')
 
-    print("Checking for errors in the XML class reference...")
+    # print("Checking for errors in the XML class reference...")
+    print("正在检查 XML 类参考中的错误...")
 
     file_list: List[str] = []
 
     for path in args.path:
         # Cut off trailing slashes so os.path.basename doesn't choke.
+        # 格式化路径
         if path.endswith("/") or path.endswith("\\"):
             path = path[:-1]
 
@@ -798,10 +801,11 @@ def main() -> None:
 
     pattern = re.compile(args.filter)
 
-    # Create the output folder recursively if it doesn't already exist.
+    # 如果不存在，创建输出文件夹。
     os.makedirs(args.output, exist_ok=True)
 
-    print("Generating the RST class reference...")
+    # print("Generating the class reference...")
+    print("生成类参考……")
 
     grouped_classes: Dict[str, List[str]] = {}
 
@@ -811,7 +815,7 @@ def main() -> None:
         state.current_class = class_name
 
         class_def.update_class_group(state)
-        make_rst_class(class_def, state, args.dry_run, args.output)
+        make_md_class(class_def, state, args.dry_run, args.output)
 
         if class_def.class_group not in grouped_classes:
             grouped_classes[class_def.class_group] = []
@@ -823,9 +827,10 @@ def main() -> None:
             grouped_classes["editor"].append(class_name)
 
     print("")
-    print("Generating the index file...")
+    # print("Generating the index file...")
+    print("生成索引文件……")
 
-    make_rst_index(grouped_classes, args.dry_run, args.output)
+    make_md_index(grouped_classes, args.dry_run, args.output)
 
     print("")
 
@@ -872,7 +877,8 @@ def main() -> None:
     if state.num_warnings == 0 and state.num_errors == 0:
         print(f'{STYLES["green"]}No warnings or errors found in the class reference XML.{STYLES["reset"]}')
         if not args.dry_run:
-            print(f"Wrote reStructuredText files for each class to: {args.output}")
+            # print(f"Wrote Markdown files for each class to: {args.output}")
+            print(f"已将 Markdown 文件写入到: {args.output}")
     else:
         exit(1)
 
@@ -905,39 +911,33 @@ def get_git_branch() -> str:
     return "master"
 
 
-# Generator methods.
+# 文档生成器
 
 
-def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir: str) -> None:
+def make_md_class(class_def: ClassDef, state: State, dry_run: bool, output_dir: str) -> None:
     class_name = class_def.name
     with open(
-        os.devnull if dry_run else os.path.join(output_dir, f"class_{class_name.lower()}.rst"),
+        os.devnull if dry_run else os.path.join(output_dir, f"class_{class_name.lower()}.md"),
         "w",
         encoding="utf-8",
         newline="\n",
     ) as f:
-        # Remove the "Edit on Github" button from the online docs page.
-        f.write(":github_url: hide\n\n")
-
-        # Add keywords metadata.
-        if class_def.keywords is not None and class_def.keywords != "":
-            f.write(f".. meta::\n\t:keywords: {class_def.keywords}\n\n")
-
-        # Warn contributors not to edit this file directly.
-        # Also provide links to the source files for reference.
+        # 警告贡献者不要直接编辑此文件，并提供源文件链接以供参考。
 
         git_branch = get_git_branch()
         source_xml_path = os.path.relpath(class_def.filepath, root_directory).replace("\\", "/")
-        source_github_url = f"https://github.com/godotengine/godot/tree/{git_branch}/{source_xml_path}"
-        generator_github_url = f"https://github.com/godotengine/godot/tree/{git_branch}/doc/tools/make_rst.py"
+        source_github_url = f"https://github.com/WeDot-Engine/WeDot/tree/{git_branch}/{source_xml_path}"
+        generator_github_url = f"https://github.com/WeDot-Engine/WeDot/tree/{git_branch}/doc/tools/make_md.py"
 
-        f.write(".. DO NOT EDIT THIS FILE!!!\n")
-        f.write(".. Generated automatically from Godot engine sources.\n")
-        f.write(f".. Generator: {generator_github_url}.\n")
-        f.write(f".. XML source: {source_github_url}.\n\n")
+        f.write("<!-- ⚠ 请勿编辑本文件 ⚠ -->\n")
+        f.write("<!-- 本文档使用脚本从 WeDot 引擎源码仓库生成。 -->\n")
+        f.write(f"<!-- 生成脚本：{generator_github_url}； -->\n")
+        f.write(f"<!-- 原文件：{source_github_url}。 -->\n\n")
 
         # Document reference id and header.
-        f.write(f".. _class_{class_name}:\n\n")
+        # 【覆写】锚点
+        # f.write(f".. _class_{class_name}:\n\n")
+        f.write(f"<div id=\"_class_{class_name}\"></div>\n\n")
         f.write(make_heading(class_name, "=", False))
 
         f.write(make_deprecated_experimental(class_def, state))
@@ -963,6 +963,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                     break
             f.write("\n\n")
 
+        # TODO 【PJ568】的进度：正在重写 make_系列() 和 format_codeblock() 中代码有默认四个空格的缩进问题，还有 make_method_signature() 等的双反斜杠问题
         # Descendants
         inherited: List[str] = []
         for c in state.classes.values():
@@ -991,13 +992,15 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
         if class_def.description is not None and class_def.description.strip() != "":
             has_description = True
 
-            f.write(".. rst-class:: classref-introduction-group\n\n")
+            # 【注释】Markdown 中没有
+            # f.write(".. rst-class:: classref-introduction-group\n\n")
             f.write(make_heading("Description", "-"))
 
             f.write(f"{format_text_block(class_def.description.strip(), class_def, state)}\n\n")
 
         if not has_description:
-            f.write(".. container:: contribute\n\n\t")
+            # 【注释】Markdown 中没有
+            # f.write(".. container:: contribute\n\n\t")
             f.write(
                 translate(
                     "There is currently no description for this class. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!"
@@ -1006,7 +1009,8 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
             )
 
         if class_def.name in CLASSES_WITH_CSHARP_DIFFERENCES:
-            f.write(".. note::\n\n\t")
+            # 【注释】Markdown 中没有
+            # f.write(".. note::\n\n\t")
             f.write(
                 translate(
                     "There are notable differences when using this API with C#. See :ref:`doc_c_sharp_differences` for more information."
@@ -1015,12 +1019,14 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
             )
 
         # Online tutorials
-        if len(class_def.tutorials) > 0:
-            f.write(".. rst-class:: classref-introduction-group\n\n")
-            f.write(make_heading("Tutorials", "-"))
+        # 【注释，if】我们暂时还没有编写好教程
+        # if len(class_def.tutorials) > 0:
+        #     # 【注释】Markdown 中没有
+        #     # f.write(".. rst-class:: classref-introduction-group\n\n")
+        #     f.write(make_heading("Tutorials", "-"))
 
-            for url, title in class_def.tutorials:
-                f.write(f"- {make_link(url, title)}\n\n")
+        #     for url, title in class_def.tutorials:
+        #         f.write(f"- {make_link(url, title)}\n\n")
 
         ### REFERENCE TABLES ###
 
@@ -1029,28 +1035,34 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
 
         # Properties reference table
         if len(class_def.properties) > 0:
-            f.write(".. rst-class:: classref-reftable-group\n\n")
+            # 【注释】Markdown 中没有
+            # f.write(".. rst-class:: classref-reftable-group\n\n")
             f.write(make_heading("Properties", "-"))
 
             ml = []
             for property_def in class_def.properties.values():
-                type_rst = property_def.type_name.to_rst(state)
+                type_md = property_def.type_name.to_md(state)
                 default = property_def.default_value
                 if default is not None and property_def.overrides:
                     ref = (
-                        f":ref:`{property_def.overrides}<class_{property_def.overrides}_property_{property_def.name}>`"
+                        # 【覆写】引用链接
+                        # f":ref:`{property_def.overrides}<class_{property_def.overrides}_property_{property_def.name}>`"
+                        f"[`{property_def.overrides}`](#class_{property_def.overrides.lower()}_property_{property_def.name.lower()})"
                     )
                     # Not using translate() for now as it breaks table formatting.
-                    ml.append((type_rst, property_def.name, f"{default} (overrides {ref})"))
+                    ml.append((type_md, property_def.name, f"{default} (overrides {ref})"))
                 else:
-                    ref = f":ref:`{property_def.name}<class_{class_name}_property_{property_def.name}>`"
-                    ml.append((type_rst, ref, default))
+                    # 【覆写】引用链接
+                    # ref = f":ref:`{property_def.name}<class_{class_name}_property_{property_def.name}>`"
+                    ref = f"[`{property_def.name}`](#class_{class_name.lower()}_property_{property_def.name.lower()})"
+                    ml.append((type_md, ref, default))
 
             format_table(f, ml, True)
 
         # Constructors, Methods, Operators reference tables
         if len(class_def.constructors) > 0:
-            f.write(".. rst-class:: classref-reftable-group\n\n")
+            # 【注释】Markdown 中没有
+            # f.write(".. rst-class:: classref-reftable-group\n\n")
             f.write(make_heading("Constructors", "-"))
 
             ml = []
@@ -1061,7 +1073,8 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
             format_table(f, ml)
 
         if len(class_def.methods) > 0:
-            f.write(".. rst-class:: classref-reftable-group\n\n")
+            # 【注释】Markdown 中没有
+            # f.write(".. rst-class:: classref-reftable-group\n\n")
             f.write(make_heading("Methods", "-"))
 
             ml = []
@@ -1072,7 +1085,8 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
             format_table(f, ml)
 
         if len(class_def.operators) > 0:
-            f.write(".. rst-class:: classref-reftable-group\n\n")
+            # 【注释】Markdown 中没有
+            # f.write(".. rst-class:: classref-reftable-group\n\n")
             f.write(make_heading("Operators", "-"))
 
             ml = []
@@ -1084,13 +1098,16 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
 
         # Theme properties reference table
         if len(class_def.theme_items) > 0:
-            f.write(".. rst-class:: classref-reftable-group\n\n")
+            # 【注释】Markdown 中没有
+            # f.write(".. rst-class:: classref-reftable-group\n\n")
             f.write(make_heading("Theme Properties", "-"))
 
             ml = []
             for theme_item_def in class_def.theme_items.values():
-                ref = f":ref:`{theme_item_def.name}<class_{class_name}_theme_{theme_item_def.data_name}_{theme_item_def.name}>`"
-                ml.append((theme_item_def.type_name.to_rst(state), ref, theme_item_def.default_value))
+                # 【覆写】引用链接
+                # ref = f":ref:`{theme_item_def.name}<class_{class_name}_theme_{theme_item_def.data_name}_{theme_item_def.name}>`"
+                ref = f"[`{theme_item_def.name}`](#class_{class_name.lower()}_theme_{theme_item_def.data_name.lower()}_{theme_item_def.name.lower()})"
+                ml.append((theme_item_def.type_name.to_md(state), ref, theme_item_def.default_value))
 
             format_table(f, ml, True)
 
@@ -1099,7 +1116,8 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
         # Signal descriptions
         if len(class_def.signals) > 0:
             f.write(make_separator(True))
-            f.write(".. rst-class:: classref-descriptions-group\n\n")
+            # 【注释】Markdown 中没有
+            # f.write(".. rst-class:: classref-descriptions-group\n\n")
             f.write(make_heading("Signals", "-"))
 
             index = 0
@@ -1111,9 +1129,14 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                 # Create signal signature and anchor point.
 
                 signal_anchor = f"class_{class_name}_signal_{signal.name}"
-                f.write(f".. _{signal_anchor}:\n\n")
-                self_link = f":ref:`🔗<{signal_anchor}>`"
-                f.write(".. rst-class:: classref-signal\n\n")
+                # 【覆写】锚点
+                # f.write(f".. _{signal_anchor}:\n\n")
+                f.write(f"<div id=\"_class_{signal_anchor}\"></div>\n\n")
+                # 【覆写】锚点
+                # self_link = f":ref:`🔗<{signal_anchor}>`"
+                self_link = f"<div id=\"{signal_anchor}\"></div>"
+                # 【注释】Markdown 中没有
+                # f.write(".. rst-class:: classref-signal\n\n")
 
                 _, signature = make_method_signature(class_def, signal, "", state)
                 f.write(f"{signature} {self_link}\n\n")
@@ -1125,7 +1148,8 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                 if signal.description is not None and signal.description.strip() != "":
                     f.write(f"{format_text_block(signal.description.strip(), signal, state)}\n\n")
                 elif signal.deprecated is None and signal.experimental is None:
-                    f.write(".. container:: contribute\n\n\t")
+                    # 【注释】Markdown 中没有
+                    # f.write(".. container:: contribute\n\n\t")
                     f.write(
                         translate(
                             "There is currently no description for this signal. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!"
@@ -1138,7 +1162,8 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
         # Enumeration descriptions
         if len(class_def.enums) > 0:
             f.write(make_separator(True))
-            f.write(".. rst-class:: classref-descriptions-group\n\n")
+            # 【注释】Markdown 中没有
+            # f.write(".. rst-class:: classref-descriptions-group\n\n")
             f.write(make_heading("Enumerations", "-"))
 
             index = 0
@@ -1150,9 +1175,14 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                 # Create enumeration signature and anchor point.
 
                 enum_anchor = f"enum_{class_name}_{e.name}"
-                f.write(f".. _{enum_anchor}:\n\n")
-                self_link = f":ref:`🔗<{enum_anchor}>`"
-                f.write(".. rst-class:: classref-enumeration\n\n")
+                # 【覆写】锚点
+                # f.write(f".. _{enum_anchor}:\n\n")
+                f.write(f"<div id=\"_class_{enum_anchor}\"></div>\n\n")
+                # 【覆写】锚点
+                # self_link = f":ref:`🔗<{enum_anchor}>`"
+                self_link = f"<div id=\"{enum_anchor}\"></div>"
+                # 【注释】Markdown 中没有
+                # f.write(".. rst-class:: classref-enumeration\n\n")
 
                 if e.is_bitfield:
                     f.write(f"flags **{e.name}**: {self_link}\n\n")
@@ -1162,10 +1192,13 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                 for value in e.values.values():
                     # Also create signature and anchor point for each enum constant.
 
-                    f.write(f".. _class_{class_name}_constant_{value.name}:\n\n")
-                    f.write(".. rst-class:: classref-enumeration-constant\n\n")
+                    # 【覆写】锚点
+                    # f.write(f".. _class_{class_name}_constant_{value.name}:\n\n")
+                    f.write(f"<div id=\"_class_{class_name}_constant_{value.name}\"></div>\n\n")
+                    # 【注释】Markdown 中没有
+                    # f.write(".. rst-class:: classref-enumeration-constant\n\n")
 
-                    f.write(f"{e.type_name.to_rst(state)} **{value.name}** = ``{value.value}``\n\n")
+                    f.write(f"{e.type_name.to_md(state)} **{value.name}** = ``{value.value}``\n\n")
 
                     # Add enum constant description.
 
@@ -1174,7 +1207,8 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                     if value.text is not None and value.text.strip() != "":
                         f.write(f"{format_text_block(value.text.strip(), value, state)}")
                     elif value.deprecated is None and value.experimental is None:
-                        f.write(".. container:: contribute\n\n\t")
+                        # 【注释】Markdown 中没有
+                        # f.write(".. container:: contribute\n\n\t")
                         f.write(
                             translate(
                                 "There is currently no description for this enum. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!"
@@ -1189,16 +1223,22 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
         # Constant descriptions
         if len(class_def.constants) > 0:
             f.write(make_separator(True))
-            f.write(".. rst-class:: classref-descriptions-group\n\n")
+            # 【注释】Markdown 中没有
+            # f.write(".. rst-class:: classref-descriptions-group\n\n")
             f.write(make_heading("Constants", "-"))
 
             for constant in class_def.constants.values():
                 # Create constant signature and anchor point.
 
                 constant_anchor = f"class_{class_name}_constant_{constant.name}"
-                f.write(f".. _{constant_anchor}:\n\n")
-                self_link = f":ref:`🔗<{constant_anchor}>`"
-                f.write(".. rst-class:: classref-constant\n\n")
+                # 【覆写】锚点
+                # f.write(f".. _{constant_anchor}:\n\n")
+                f.write(f"<div id=\"_{constant_anchor}\"></div>\n\n")
+                # 【覆写】锚点
+                # self_link = f":ref:`🔗<{constant_anchor}>`"
+                self_link = f"<div id=\"{constant_anchor}\"></div>"
+                # 【注释】Markdown 中没有
+                # f.write(".. rst-class:: classref-constant\n\n")
 
                 f.write(f"**{constant.name}** = ``{constant.value}`` {self_link}\n\n")
 
@@ -1209,7 +1249,8 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                 if constant.text is not None and constant.text.strip() != "":
                     f.write(f"{format_text_block(constant.text.strip(), constant, state)}")
                 elif constant.deprecated is None and constant.experimental is None:
-                    f.write(".. container:: contribute\n\n\t")
+                    # 【注释】Markdown 中没有
+                    # f.write(".. container:: contribute\n\n\t")
                     f.write(
                         translate(
                             "There is currently no description for this constant. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!"
@@ -1236,10 +1277,15 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                     self_link = ""
                     if i == 0:
                         annotation_anchor = f"class_{class_name}_annotation_{m.name}"
-                        f.write(f".. _{annotation_anchor}:\n\n")
-                        self_link = f" :ref:`🔗<{annotation_anchor}>`"
+                        # 【覆写】锚点
+                        # f.write(f".. _{annotation_anchor}:\n\n")
+                        f.write(f"<div id=\"_{annotation_anchor}\"></div>\n\n")
+                        # 【覆写】锚点
+                        # self_link = f" :ref:`🔗<{annotation_anchor}>`"
+                        self_link = f"<div id=\"{annotation_anchor}\"></div>"
 
-                    f.write(".. rst-class:: classref-annotation\n\n")
+                    # 【注释】Markdown 中没有
+                    # f.write(".. rst-class:: classref-annotation\n\n")
 
                     _, signature = make_method_signature(class_def, m, "", state)
                     f.write(f"{signature}{self_link}\n\n")
@@ -1249,7 +1295,8 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                     if m.description is not None and m.description.strip() != "":
                         f.write(f"{format_text_block(m.description.strip(), m, state)}\n\n")
                     else:
-                        f.write(".. container:: contribute\n\n\t")
+                        # 【注释】Markdown 中没有
+                        # f.write(".. container:: contribute\n\n\t")
                         f.write(
                             translate(
                                 "There is currently no description for this annotation. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!"
@@ -1262,7 +1309,8 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
         # Property descriptions
         if any(not p.overrides for p in class_def.properties.values()) > 0:
             f.write(make_separator(True))
-            f.write(".. rst-class:: classref-descriptions-group\n\n")
+            # 【注释】Markdown 中没有
+            # f.write(".. rst-class:: classref-descriptions-group\n\n")
             f.write(make_heading("Property Descriptions", "-"))
 
             index = 0
@@ -1277,15 +1325,20 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                 # Create property signature and anchor point.
 
                 property_anchor = f"class_{class_name}_property_{property_def.name}"
-                f.write(f".. _{property_anchor}:\n\n")
-                self_link = f":ref:`🔗<{property_anchor}>`"
-                f.write(".. rst-class:: classref-property\n\n")
+                # 【覆写】锚点
+                # f.write(f".. _{property_anchor}:\n\n")
+                f.write(f"<div id=\"_{property_anchor}\"></div>\n\n")
+                # 【覆写】锚点
+                # self_link = f":ref:`🔗<{property_anchor}>`"
+                self_link = f"<div id=\"{property_anchor}\"></div>"
+                # 【注释】Markdown 中没有
+                # f.write(".. rst-class:: classref-property\n\n")
 
                 property_default = ""
                 if property_def.default_value is not None:
                     property_default = f" = {property_def.default_value}"
                 f.write(
-                    f"{property_def.type_name.to_rst(state)} **{property_def.name}**{property_default} {self_link}\n\n"
+                    f"{property_def.type_name.to_md(state)} **{property_def.name}**{property_default} {self_link}\n\n"
                 )
 
                 # Create property setter and getter records.
@@ -1301,7 +1354,8 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                     property_setget += f"- {property_getter}\n"
 
                 if property_setget != "":
-                    f.write(".. rst-class:: classref-property-setget\n\n")
+                    # 【注释】Markdown 中没有
+                    # f.write(".. rst-class:: classref-property-setget\n\n")
                     f.write(property_setget)
                     f.write("\n")
 
@@ -1315,7 +1369,8 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                         tmp = f"[b]Note:[/b] The returned array is [i]copied[/i] and any changes to it will not update the original property value. See [{property_def.type_name.type_name}] for more details."
                         f.write(f"{format_text_block(tmp, property_def, state)}\n\n")
                 elif property_def.deprecated is None and property_def.experimental is None:
-                    f.write(".. container:: contribute\n\n\t")
+                    # 【注释】Markdown 中没有
+                    # f.write(".. container:: contribute\n\n\t")
                     f.write(
                         translate(
                             "There is currently no description for this property. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!"
@@ -1328,7 +1383,8 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
         # Constructor, Method, Operator descriptions
         if len(class_def.constructors) > 0:
             f.write(make_separator(True))
-            f.write(".. rst-class:: classref-descriptions-group\n\n")
+            # 【注释】Markdown 中没有
+            # f.write(".. rst-class:: classref-descriptions-group\n\n")
             f.write(make_heading("Constructor Descriptions", "-"))
 
             index = 0
@@ -1343,10 +1399,15 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                     self_link = ""
                     if i == 0:
                         constructor_anchor = f"class_{class_name}_constructor_{m.name}"
-                        f.write(f".. _{constructor_anchor}:\n\n")
-                        self_link = f" :ref:`🔗<{constructor_anchor}>`"
+                        # 【覆写】锚点
+                        # f.write(f".. _{constructor_anchor}:\n\n")
+                        f.write(f"<div id=\"_{constructor_anchor}\"></div>\n\n")
+                        # 【覆写】锚点
+                        # self_link = f" :ref:`🔗<{constructor_anchor}>`"
+                        self_link = f"<div id=\"{constructor_anchor}\"></div>"
 
-                    f.write(".. rst-class:: classref-constructor\n\n")
+                    # 【注释】Markdown 中没有
+                    # f.write(".. rst-class:: classref-constructor\n\n")
 
                     ret_type, signature = make_method_signature(class_def, m, "", state)
                     f.write(f"{ret_type} {signature}{self_link}\n\n")
@@ -1358,7 +1419,8 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                     if m.description is not None and m.description.strip() != "":
                         f.write(f"{format_text_block(m.description.strip(), m, state)}\n\n")
                     elif m.deprecated is None and m.experimental is None:
-                        f.write(".. container:: contribute\n\n\t")
+                        # 【注释】Markdown 中没有
+                        # f.write(".. container:: contribute\n\n\t")
                         f.write(
                             translate(
                                 "There is currently no description for this constructor. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!"
@@ -1370,7 +1432,8 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
 
         if len(class_def.methods) > 0:
             f.write(make_separator(True))
-            f.write(".. rst-class:: classref-descriptions-group\n\n")
+            # 【注释】Markdown 中没有
+            # f.write(".. rst-class:: classref-descriptions-group\n\n")
             f.write(make_heading("Method Descriptions", "-"))
 
             index = 0
@@ -1389,10 +1452,15 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                         if m.name.startswith("_"):
                             method_qualifier = "private_"
                         method_anchor = f"class_{class_name}_{method_qualifier}method_{m.name}"
-                        f.write(f".. _{method_anchor}:\n\n")
-                        self_link = f" :ref:`🔗<{method_anchor}>`"
+                        # 【覆写】锚点
+                        # f.write(f".. _{method_anchor}:\n\n")
+                        f.write(f"<div id=\"_{method_anchor}\"></div>\n\n")
+                        # 【覆写】锚点
+                        # self_link = f" :ref:`🔗<{method_anchor}>`"
+                        self_link = f"<div id=\"{method_anchor}\"></div>"
 
-                    f.write(".. rst-class:: classref-method\n\n")
+                    # 【注释】Markdown 中没有
+                    # f.write(".. rst-class:: classref-method\n\n")
 
                     ret_type, signature = make_method_signature(class_def, m, "", state)
 
@@ -1405,7 +1473,8 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                     if m.description is not None and m.description.strip() != "":
                         f.write(f"{format_text_block(m.description.strip(), m, state)}\n\n")
                     elif m.deprecated is None and m.experimental is None:
-                        f.write(".. container:: contribute\n\n\t")
+                        # 【注释】Markdown 中没有
+                        # f.write(".. container:: contribute\n\n\t")
                         f.write(
                             translate(
                                 "There is currently no description for this method. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!"
@@ -1417,7 +1486,8 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
 
         if len(class_def.operators) > 0:
             f.write(make_separator(True))
-            f.write(".. rst-class:: classref-descriptions-group\n\n")
+            # 【注释】Markdown 中没有
+            # f.write(".. rst-class:: classref-descriptions-group\n\n")
             f.write(make_heading("Operator Descriptions", "-"))
 
             index = 0
@@ -1432,10 +1502,15 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                     operator_anchor = f"class_{class_name}_operator_{sanitize_operator_name(m.name, state)}"
                     for parameter in m.parameters:
                         operator_anchor += f"_{parameter.type_name.type_name}"
-                    f.write(f".. _{operator_anchor}:\n\n")
-                    self_link = f":ref:`🔗<{operator_anchor}>`"
+                    # 【覆写】锚点
+                    # f.write(f".. _{operator_anchor}:\n\n")
+                    f.write(f"<div id=\"_{operator_anchor}\"></div>\n\n")
+                    # 【覆写】锚点
+                    # self_link = f":ref:`🔗<{operator_anchor}>`"
+                    self_link = f"<div id=\"{operator_anchor}\"></div>"
 
-                    f.write(".. rst-class:: classref-operator\n\n")
+                    # 【注释】Markdown 中没有
+                    # f.write(".. rst-class:: classref-operator\n\n")
 
                     ret_type, signature = make_method_signature(class_def, m, "", state)
                     f.write(f"{ret_type} {signature} {self_link}\n\n")
@@ -1447,7 +1522,8 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                     if m.description is not None and m.description.strip() != "":
                         f.write(f"{format_text_block(m.description.strip(), m, state)}\n\n")
                     elif m.deprecated is None and m.experimental is None:
-                        f.write(".. container:: contribute\n\n\t")
+                        # 【注释】Markdown 中没有
+                        # f.write(".. container:: contribute\n\n\t")
                         f.write(
                             translate(
                                 "There is currently no description for this operator. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!"
@@ -1460,7 +1536,8 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
         # Theme property descriptions
         if len(class_def.theme_items) > 0:
             f.write(make_separator(True))
-            f.write(".. rst-class:: classref-descriptions-group\n\n")
+            # 【注释】Markdown 中没有
+            # f.write(".. rst-class:: classref-descriptions-group\n\n")
             f.write(make_heading("Theme Property Descriptions", "-"))
 
             index = 0
@@ -1472,15 +1549,20 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                 # Create theme property signature and anchor point.
 
                 theme_item_anchor = f"class_{class_name}_theme_{theme_item_def.data_name}_{theme_item_def.name}"
-                f.write(f".. _{theme_item_anchor}:\n\n")
-                self_link = f":ref:`🔗<{theme_item_anchor}>`"
-                f.write(".. rst-class:: classref-themeproperty\n\n")
+                # 【覆写】锚点
+                # f.write(f".. _{theme_item_anchor}:\n\n")
+                f.write(f"<div id=\"_{theme_item_anchor}\"></div>\n\n")
+                # 【覆写】锚点
+                # self_link = f":ref:`🔗<{theme_item_anchor}>`"
+                self_link = f"<div id=\"{theme_item_anchor}\"></div>"
+                # 【注释】Markdown 中没有
+                # f.write(".. rst-class:: classref-themeproperty\n\n")
 
                 theme_item_default = ""
                 if theme_item_def.default_value is not None:
                     theme_item_default = f" = {theme_item_def.default_value}"
                 f.write(
-                    f"{theme_item_def.type_name.to_rst(state)} **{theme_item_def.name}**{theme_item_default} {self_link}\n\n"
+                    f"{theme_item_def.type_name.to_md(state)} **{theme_item_def.name}**{theme_item_default} {self_link}\n\n"
                 )
 
                 # Add theme property description, or a call to action if it's missing.
@@ -1490,7 +1572,8 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                 if theme_item_def.text is not None and theme_item_def.text.strip() != "":
                     f.write(f"{format_text_block(theme_item_def.text.strip(), theme_item_def, state)}\n\n")
                 elif theme_item_def.deprecated is None and theme_item_def.experimental is None:
-                    f.write(".. container:: contribute\n\n\t")
+                    # 【注释】Markdown 中没有
+                    # f.write(".. container:: contribute\n\n\t")
                     f.write(
                         translate(
                             "There is currently no description for this theme property. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!"
@@ -1503,6 +1586,29 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
         f.write(make_footer())
 
 
+# 【覆写】引用类链接
+# def make_type(klass: str, state: State) -> str:
+#     if klass.find("*") != -1:  # Pointer, ignore
+#         return f"``{klass}``"
+
+#     link_type = klass
+#     is_array = False
+
+#     if link_type.endswith("[]"):  # Typed array, strip [] to link to contained type.
+#         link_type = link_type[:-2]
+#         is_array = True
+
+#     if link_type in state.classes:
+#         type_rst = f":ref:`{link_type}<class_{link_type}>`"
+#         if is_array:
+#             type_rst = f":ref:`Array<class_Array>`\\[{type_rst}\\]"
+#         return type_rst
+
+#     print_error(f'{state.current_class}.xml: Unresolved type "{link_type}".', state)
+#     type_rst = f"``{link_type}``"
+#     if is_array:
+#         type_rst = f":ref:`Array<class_Array>`\\[{type_rst}\\]"
+#     return type_rst
 def make_type(klass: str, state: State) -> str:
     if klass.find("*") != -1:  # Pointer, ignore
         return f"``{klass}``"
@@ -1515,18 +1621,48 @@ def make_type(klass: str, state: State) -> str:
         is_array = True
 
     if link_type in state.classes:
-        type_rst = f":ref:`{link_type}<class_{link_type}>`"
+        type_md = f"[`{link_type}`](class_{link_type.lower()}.md)"
         if is_array:
-            type_rst = f":ref:`Array<class_Array>`\\[{type_rst}\\]"
-        return type_rst
+            # TODO：看不懂
+            type_md = f"[Array](class_array.md) {type_md}"
+        return type_md
 
     print_error(f'{state.current_class}.xml: Unresolved type "{link_type}".', state)
-    type_rst = f"``{link_type}``"
+    type_md = f"`{link_type}`"
     if is_array:
-        type_rst = f":ref:`Array<class_Array>`\\[{type_rst}\\]"
-    return type_rst
+        type_md = f"[Array](class_array.md) {type_md}"
+    return type_md
 
 
+# 【覆写】引用组链接
+# def make_enum(t: str, is_bitfield: bool, state: State) -> str:
+#     p = t.find(".")
+#     if p >= 0:
+#         c = t[0:p]
+#         e = t[p + 1 :]
+#         # Variant enums live in GlobalScope but still use periods.
+#         if c == "Variant":
+#             c = "@GlobalScope"
+#             e = "Variant." + e
+#     else:
+#         c = state.current_class
+#         e = t
+#         if c in state.classes and e not in state.classes[c].enums:
+#             c = "@GlobalScope"
+
+#     if c in state.classes and e in state.classes[c].enums:
+#         if is_bitfield:
+#             if not state.classes[c].enums[e].is_bitfield:
+#                 print_error(f'{state.current_class}.xml: Enum "{t}" is not bitfield.', state)
+#             return f"|bitfield|\\[:ref:`{e}<enum_{c}_{e}>`\\]"
+#         else:
+#             return f":ref:`{e}<enum_{c}_{e}>`"
+
+#     # Don't fail for `Vector3.Axis`, as this enum is a special case which is expected not to be resolved.
+#     if f"{c}.{e}" != "Vector3.Axis":
+#         print_error(f'{state.current_class}.xml: Unresolved enum "{t}".', state)
+
+#     return t
 def make_enum(t: str, is_bitfield: bool, state: State) -> str:
     p = t.find(".")
     if p >= 0:
@@ -1546,9 +1682,9 @@ def make_enum(t: str, is_bitfield: bool, state: State) -> str:
         if is_bitfield:
             if not state.classes[c].enums[e].is_bitfield:
                 print_error(f'{state.current_class}.xml: Enum "{t}" is not bitfield.', state)
-            return f"|bitfield|\\[:ref:`{e}<enum_{c}_{e}>`\\]"
+            return f"[{e}](#enum_{c}_{e})"
         else:
-            return f":ref:`{e}<enum_{c}_{e}>`"
+            return f"[{e}](#enum_{c}_{e})"
 
     # Don't fail for `Vector3.Axis`, as this enum is a special case which is expected not to be resolved.
     if f"{c}.{e}" != "Vector3.Axis":
@@ -1557,13 +1693,71 @@ def make_enum(t: str, is_bitfield: bool, state: State) -> str:
     return t
 
 
+# 【覆写】函数和其引用链接
+# def make_method_signature(
+#     class_def: ClassDef, definition: Union[AnnotationDef, MethodDef, SignalDef], ref_type: str, state: State
+# ) -> Tuple[str, str]:
+#     ret_type = ""
+
+#     if isinstance(definition, MethodDef):
+#         ret_type = definition.return_type.to_md(state)
+
+#     qualifiers = None
+#     if isinstance(definition, (MethodDef, AnnotationDef)):
+#         qualifiers = definition.qualifiers
+
+#     out = ""
+#     if isinstance(definition, MethodDef) and ref_type != "":
+#         if ref_type == "operator":
+#             op_name = definition.name.replace("<", "\\<")  # So operator "<" gets correctly displayed.
+#             out += f":ref:`{op_name}<class_{class_def.name}_{ref_type}_{sanitize_operator_name(definition.name, state)}"
+#             for parameter in definition.parameters:
+#                 out += f"_{parameter.type_name.type_name}"
+#             out += ">`"
+#         elif ref_type == "method":
+#             ref_type_qualifier = ""
+#             if definition.name.startswith("_"):
+#                 ref_type_qualifier = "private_"
+#             out += f":ref:`{definition.name}<class_{class_def.name}_{ref_type_qualifier}{ref_type}_{definition.name}>`"
+#         else:
+#             out += f":ref:`{definition.name}<class_{class_def.name}_{ref_type}_{definition.name}>`"
+#     else:
+#         out += f"**{definition.name}**"
+
+#     out += "\\ ("
+#     for i, arg in enumerate(definition.parameters):
+#         if i > 0:
+#             out += ", "
+#         else:
+#             out += "\\ "
+
+#         out += f"{arg.name}\\: {arg.type_name.to_md(state)}"
+
+#         if arg.default_value is not None:
+#             out += f" = {arg.default_value}"
+
+#     if qualifiers is not None and "vararg" in qualifiers:
+#         if len(definition.parameters) > 0:
+#             out += ", ..."
+#         else:
+#             out += "\\ ..."
+
+#     out += "\\ )"
+
+#     if qualifiers is not None:
+#         # Use substitutions for abbreviations. This is used to display tooltips on hover.
+#         # See `make_footer()` for descriptions.
+#         for qualifier in qualifiers.split():
+#             out += f" |{qualifier}|"
+
+#     return ret_type, out
 def make_method_signature(
     class_def: ClassDef, definition: Union[AnnotationDef, MethodDef, SignalDef], ref_type: str, state: State
 ) -> Tuple[str, str]:
     ret_type = ""
 
     if isinstance(definition, MethodDef):
-        ret_type = definition.return_type.to_rst(state)
+        ret_type = definition.return_type.to_md(state)
 
     qualifiers = None
     if isinstance(definition, (MethodDef, AnnotationDef)):
@@ -1572,29 +1766,29 @@ def make_method_signature(
     out = ""
     if isinstance(definition, MethodDef) and ref_type != "":
         if ref_type == "operator":
-            op_name = definition.name.replace("<", "\\<")  # So operator "<" gets correctly displayed.
-            out += f":ref:`{op_name}<class_{class_def.name}_{ref_type}_{sanitize_operator_name(definition.name, state)}"
+            op_name = definition.name
+            out += f"[`{op_name}`](class_{class_def.name}.md#{ref_type}_{sanitize_operator_name(definition.name, state)}"
             for parameter in definition.parameters:
                 out += f"_{parameter.type_name.type_name}"
-            out += ">`"
+            out += ")"
         elif ref_type == "method":
             ref_type_qualifier = ""
             if definition.name.startswith("_"):
                 ref_type_qualifier = "private_"
-            out += f":ref:`{definition.name}<class_{class_def.name}_{ref_type_qualifier}{ref_type}_{definition.name}>`"
+            out += f"[`{definition.name}`](#class_{class_def.name}_{ref_type_qualifier}{ref_type}_{definition.name})"
         else:
-            out += f":ref:`{definition.name}<class_{class_def.name}_{ref_type}_{definition.name}>`"
+            out += f"[`{definition.name}`](#class_{class_def.name}_{ref_type}_{definition.name})"
     else:
         out += f"**{definition.name}**"
 
-    out += "\\ ("
+    out += " ("
     for i, arg in enumerate(definition.parameters):
         if i > 0:
             out += ", "
         else:
-            out += "\\ "
+            out += " "
 
-        out += f"{arg.name}\\: {arg.type_name.to_rst(state)}"
+        out += f"{arg.name}: {arg.type_name.to_md(state)}"
 
         if arg.default_value is not None:
             out += f" = {arg.default_value}"
@@ -1603,9 +1797,9 @@ def make_method_signature(
         if len(definition.parameters) > 0:
             out += ", ..."
         else:
-            out += "\\ ..."
+            out += " ..."
 
-    out += "\\ )"
+    out += " )"
 
     if qualifiers is not None:
         # Use substitutions for abbreviations. This is used to display tooltips on hover.
@@ -1671,15 +1865,57 @@ def make_deprecated_experimental(item: DefinitionBase, state: State) -> str:
     return result
 
 
+# 【覆写】以符合 Markdown 标题格式
+# def make_heading(title: str, underline: str, l10n: bool = True) -> str:
+#     if l10n:
+#         new_title = translate(title)
+#         if new_title != title:
+#             title = new_title
+#             underline *= 2  # Double length to handle wide chars.
+#     return f"{title}\n{(underline * len(title))}\n\n"
 def make_heading(title: str, underline: str, l10n: bool = True) -> str:
     if l10n:
         new_title = translate(title)
         if new_title != title:
             title = new_title
-            underline *= 2  # Double length to handle wide chars.
-    return f"{title}\n{(underline * len(title))}\n\n"
+    num = '#'
+    match underline:
+        case '=':
+            num *= 1
+        case '-':
+            num *= 2
+        case '~':
+            num *= 3
+        case _:
+            num *= 4
+    return f"{num} {title}\n\n"
 
 
+# 【覆写】脚注
+# def make_footer() -> str:
+#     # Generate reusable abbreviation substitutions.
+#     # This way, we avoid bloating the generated rST with duplicate abbreviations.
+#     virtual_msg = translate("This method should typically be overridden by the user to have any effect.")
+#     const_msg = translate("This method has no side effects. It doesn't modify any of the instance's member variables.")
+#     vararg_msg = translate("This method accepts any number of arguments after the ones described here.")
+#     constructor_msg = translate("This method is used to construct a type.")
+#     static_msg = translate(
+#         "This method doesn't need an instance to be called, so it can be called directly using the class name."
+#     )
+#     operator_msg = translate("This method describes a valid operator to use with this type as left-hand operand.")
+#     bitfield_msg = translate("This value is an integer composed as a bitmask of the following flags.")
+#     void_msg = translate("No return value.")
+
+#     return (
+#         f".. |virtual| replace:: :abbr:`virtual ({virtual_msg})`\n"
+#         f".. |const| replace:: :abbr:`const ({const_msg})`\n"
+#         f".. |vararg| replace:: :abbr:`vararg ({vararg_msg})`\n"
+#         f".. |constructor| replace:: :abbr:`constructor ({constructor_msg})`\n"
+#         f".. |static| replace:: :abbr:`static ({static_msg})`\n"
+#         f".. |operator| replace:: :abbr:`operator ({operator_msg})`\n"
+#         f".. |bitfield| replace:: :abbr:`BitField ({bitfield_msg})`\n"
+#         f".. |void| replace:: :abbr:`void ({void_msg})`\n"
+#     )
 def make_footer() -> str:
     # Generate reusable abbreviation substitutions.
     # This way, we avoid bloating the generated rST with duplicate abbreviations.
@@ -1695,14 +1931,14 @@ def make_footer() -> str:
     void_msg = translate("No return value.")
 
     return (
-        f".. |virtual| replace:: :abbr:`virtual ({virtual_msg})`\n"
-        f".. |const| replace:: :abbr:`const ({const_msg})`\n"
-        f".. |vararg| replace:: :abbr:`vararg ({vararg_msg})`\n"
-        f".. |constructor| replace:: :abbr:`constructor ({constructor_msg})`\n"
-        f".. |static| replace:: :abbr:`static ({static_msg})`\n"
-        f".. |operator| replace:: :abbr:`operator ({operator_msg})`\n"
-        f".. |bitfield| replace:: :abbr:`BitField ({bitfield_msg})`\n"
-        f".. |void| replace:: :abbr:`void ({void_msg})`\n"
+        f"[^virtual]: {virtual_msg}\n"
+        f"[^const]: {const_msg}\n"
+        f"[^vararg]: {vararg_msg}\n"
+        f"[^constructor]: {constructor_msg}\n"
+        f"[^static]: {static_msg}\n"
+        f"[^operator]: {operator_msg}\n"
+        f"[^bitfield]: {bitfield_msg}\n"
+        f"[^void]: {void_msg}\n"
     )
 
 
@@ -1710,54 +1946,74 @@ def make_separator(section_level: bool = False) -> str:
     separator_class = "item"
     if section_level:
         separator_class = "section"
+    # 【覆写】
+    return f"<!-- rst-class:: classref-{separator_class}-separator -->\n\n---\n\n"
 
-    return f".. rst-class:: classref-{separator_class}-separator\n\n----\n\n"
 
+# 【覆写】以符合 Markdown 链接格式
+# def make_link(url: str, title: str) -> str:
+#     match = GODOT_DOCS_PATTERN.search(url)
+#     if match:
+#         groups = match.groups()
+#         if match.lastindex == 2:
+#             # Doc reference with fragment identifier: emit direct link to section with reference to page, for example:
+#             # `#calling-javascript-from-script in Exporting For Web`
+#             # Or use the title if provided.
+#             if title != "":
+#                 return f"`{title} <../{groups[0]}.html{groups[1]}>`__"
+#             return f"`{groups[1]} <../{groups[0]}.html{groups[1]}>`__ in :doc:`../{groups[0]}`"
+#         elif match.lastindex == 1:
+#             # Doc reference, for example:
+#             # `Math`
+#             if title != "":
+#                 return f":doc:`{title} <../{groups[0]}>`"
+#             return f":doc:`../{groups[0]}`"
 
+#     # External link, for example:
+#     # `http://enet.bespin.org/usergroup0.html`
+#     if title != "":
+#         return f"`{title} <{url}>`__"
+#     return f"`{url} <{url}>`__"
 def make_link(url: str, title: str) -> str:
     match = GODOT_DOCS_PATTERN.search(url)
     if match:
         groups = match.groups()
         if match.lastindex == 2:
-            # Doc reference with fragment identifier: emit direct link to section with reference to page, for example:
-            # `#calling-javascript-from-script in Exporting For Web`
-            # Or use the title if provided.
             if title != "":
-                return f"`{title} <../{groups[0]}.html{groups[1]}>`__"
-            return f"`{groups[1]} <../{groups[0]}.html{groups[1]}>`__ in :doc:`../{groups[0]}`"
+                return f"[*{title}*](../{groups[0]}.md{groups[1]})"
+            return f"`[*{groups[1]}*](../{groups[0]}.md{groups[1]}) in [{groups[0]}](../{groups[0]})"
         elif match.lastindex == 1:
-            # Doc reference, for example:
-            # `Math`
             if title != "":
-                return f":doc:`{title} <../{groups[0]}>`"
-            return f":doc:`../{groups[0]}`"
+                return f"[*{title}*](../{groups[0]})"
+            return f"[*{groups[0]}*](../{groups[0]})"
 
-    # External link, for example:
-    # `http://enet.bespin.org/usergroup0.html`
     if title != "":
-        return f"`{title} <{url}>`__"
-    return f"`{url} <{url}>`__"
+        return f"[*{title}*]({url})"
+    return f"[*{url}*]({url})"
 
 
-def make_rst_index(grouped_classes: Dict[str, List[str]], dry_run: bool, output_dir: str) -> None:
+def make_md_index(grouped_classes: Dict[str, List[str]], dry_run: bool, output_dir: str) -> None:
     with open(
-        os.devnull if dry_run else os.path.join(output_dir, "index.rst"), "w", encoding="utf-8", newline="\n"
+        os.devnull if dry_run else os.path.join(output_dir, "index.md"), "w", encoding="utf-8", newline="\n"
     ) as f:
         # Remove the "Edit on Github" button from the online docs page, and disallow user-contributed notes
         # on the index page. User-contributed notes are allowed on individual class pages.
-        f.write(":github_url: hide\n:allow_comments: False\n\n")
+        # f.write(":github_url: hide\n:allow_comments: False\n\n")
+        # 【注释】我注释了上面这一行因为我们的是显示源文件按钮。
 
         # Warn contributors not to edit this file directly.
         # Also provide links to the source files for reference.
 
         git_branch = get_git_branch()
-        generator_github_url = f"https://github.com/godotengine/godot/tree/{git_branch}/doc/tools/make_rst.py"
+        generator_github_url = f"https://github.com/WeDot-Engine/WeDot/tree/{git_branch}/doc/tools/make_md.py"
 
-        f.write(".. DO NOT EDIT THIS FILE!!!\n")
-        f.write(".. Generated automatically from Godot engine sources.\n")
-        f.write(f".. Generator: {generator_github_url}.\n\n")
+        f.write("<!-- ⚠ 请勿编辑本文件 ⚠ -->\n")
+        f.write("<!-- 本文档使用脚本从 WeDot 引擎源码仓库生成。 -->\n")
+        f.write(f"<!-- 生成脚本：{generator_github_url}； -->\n\n")
 
-        f.write(".. _doc_class_reference:\n\n")
+        # 【覆写】锚点
+        # f.write(".. _doc_class_reference:\n\n")
+        f.write(f"<div id=\"_doc_class_reference\"></div>\n\n")
 
         f.write(make_heading("All classes", "="))
 
@@ -1765,19 +2021,24 @@ def make_rst_index(grouped_classes: Dict[str, List[str]], dry_run: bool, output_
             if group_name in grouped_classes:
                 f.write(make_heading(CLASS_GROUPS[group_name], "-"))
 
-                f.write(".. toctree::\n")
-                f.write("    :maxdepth: 1\n")
-                f.write(f"    :name: toc-class-ref-{group_name}s\n")
-                f.write("\n")
+                # 【注释】Markdown 不需要
+                # f.write(".. toctree::\n")
+                # f.write("    :maxdepth: 1\n")
+                # f.write(f"    :name: toc-class-ref-{group_name}s\n")
+                # f.write("\n")
 
                 if group_name in CLASS_GROUPS_BASE:
-                    f.write(f"    class_{CLASS_GROUPS_BASE[group_name].lower()}\n")
+                    # 【覆写】index.md 中，使用链接 - [class_group_name](class_group_path)
+                    # f.write(f"    class_{CLASS_GROUPS_BASE[group_name].lower()}\n")
+                    f.write(f"- [{CLASS_GROUPS_BASE[group_name]}](class_{CLASS_GROUPS_BASE[group_name].lower()}.md)\n")
 
                 for class_name in grouped_classes[group_name]:
                     if group_name in CLASS_GROUPS_BASE and CLASS_GROUPS_BASE[group_name].lower() == class_name.lower():
                         continue
 
-                    f.write(f"    class_{class_name.lower()}\n")
+                    # 【覆写】index.md 中，使用链接 - [class_name](class_path)
+                    # f.write(f"    class_{class_name.lower()}\n")
+                    f.write(f"- [{class_name}](class_{class_name.lower()}.md)\n")
 
                 f.write("\n")
 
@@ -1884,7 +2145,7 @@ def format_text_block(
             result = format_codeblock(tag_state, post_text, indent_level, state)
             if result is None:
                 return ""
-            text = f"{pre_text}{result[0]}"
+            text = f"{pre_text}{result[0]}\n```"
             pos += result[1] - indent_level
 
         # Handle normal text
@@ -1955,7 +2216,7 @@ def format_text_block(
                             pre_text = pre_text[:-1]
 
                     elif is_in_tagset(tag_state.name, ["code"]):
-                        tag_text = "``"
+                        tag_text = "`"
                         tag_depth -= 1
                         inside_code = False
                         ignore_code_warnings = False
@@ -1990,7 +2251,9 @@ def format_text_block(
                     inside_code_tabs = False
                 else:
                     tag_depth += 1
-                    tag_text = "\n.. tabs::"
+                    # 【覆写】代码块
+                    # tag_text = "\n.. tabs::"
+                    tag_text = ""
                     inside_code_tabs = True
 
             elif is_in_tagset(tag_state.name, RESERVED_CODEBLOCK_TAGS):
@@ -2004,7 +2267,9 @@ def format_text_block(
                         )
                     else:
                         has_codeblocks_gdscript = True
-                    tag_text = "\n .. code-tab:: gdscript\n"
+                    # 【覆写】代码块
+                    # tag_text = "\n .. code-tab:: gdscript\n"
+                    tag_text = "\n```gdscript\n"
                 elif tag_state.name == "csharp":
                     if not inside_code_tabs:
                         print_error(
@@ -2013,7 +2278,9 @@ def format_text_block(
                         )
                     else:
                         has_codeblocks_csharp = True
-                    tag_text = "\n .. code-tab:: csharp\n"
+                    # 【覆写】代码块
+                    # tag_text = "\n .. code-tab:: csharp\n"
+                    tag_text = "\n```csharp\n"
                 else:
                     state.script_language_parity_check.add_hit(
                         state.current_class,
@@ -2022,17 +2289,19 @@ def format_text_block(
                         state,
                     )
 
-                    if "lang=text" in tag_state.arguments.split(" "):
-                        tag_text = "\n.. code:: text\n"
+                    if "lang=text" in tag_state.arguments.split(" "): 
+                        # 【覆写】文字代码块
+                        # tag_text = "\n.. code:: text\n"
+                        tag_text = "\n```text\n"
                     else:
-                        tag_text = "\n::\n"
+                        tag_text = "\n```\n"
 
                 inside_code = True
                 inside_code_tag = tag_state.name
                 ignore_code_warnings = "skip-lint" in tag_state.arguments.split(" ")
 
             elif is_in_tagset(tag_state.name, ["code"]):
-                tag_text = "``"
+                tag_text = "`"
                 tag_depth += 1
 
                 inside_code = True
@@ -2258,7 +2527,9 @@ def format_text_block(
                         repl_text = target_name
                         if target_class_name != state.current_class:
                             repl_text = f"{target_class_name}.{target_name}"
-                        tag_text = f":ref:`{repl_text}<class_{target_class_name}{ref_type}_{target_name}>`"
+                        # 【覆写】引用链接
+                        # tag_text = f":ref:`{repl_text}<class_{target_class_name}{ref_type}_{target_name}>`"
+                        tag_text = f"[`{repl_text}`](#class_{target_class_name.lower()}{ref_type.lower()}_{target_name.lower()})"
                         escape_pre = True
                         escape_post = True
 
@@ -2287,7 +2558,7 @@ def format_text_block(
                                     state,
                                 )
 
-                        tag_text = f"``{link_target}``"
+                        tag_text = f"`{link_target}`"
                         escape_pre = True
                         escape_post = True
 
@@ -2318,9 +2589,9 @@ def format_text_block(
                     post_text = text[endurl_pos + 6 :]
 
                     if pre_text and pre_text[-1] not in MARKUP_ALLOWED_PRECEDENT:
-                        pre_text += "\\ "
+                        pre_text += " "
                     if post_text and post_text[0] not in MARKUP_ALLOWED_SUBSEQUENT:
-                        post_text = "\\ " + post_text
+                        post_text = " " + post_text
 
                     text = pre_text + tag_text + post_text
                     pos = len(pre_text) + len(tag_text)
@@ -2368,10 +2639,10 @@ def format_text_block(
                 tag_text = ""
 
             elif tag_state.name == "lb":
-                tag_text = "\\["
+                tag_text = "["
 
             elif tag_state.name == "rb":
-                tag_text = "\\]"
+                tag_text = "]"
 
             elif tag_state.name == "kbd":
                 tag_text = "`"
@@ -2398,15 +2669,15 @@ def format_text_block(
                         state,
                     )
 
-                    tag_text = f"``{tag_text}``"
+                    tag_text = f"`{tag_text}`"
                     escape_pre = True
                     escape_post = True
 
         # Properly escape things like `[Node]s`
         if escape_pre and pre_text and pre_text[-1] not in MARKUP_ALLOWED_PRECEDENT:
-            pre_text += "\\ "
+            pre_text += " "
         if escape_post and post_text and post_text[0] not in MARKUP_ALLOWED_SUBSEQUENT:
-            post_text = "\\ " + post_text
+            post_text = " " + post_text
 
         next_brac_pos = post_text.find("[", 0)
         iter_pos = 0
@@ -2414,7 +2685,7 @@ def format_text_block(
             iter_pos = post_text.find("*", iter_pos, next_brac_pos)
             if iter_pos == -1:
                 break
-            post_text = f"{post_text[:iter_pos]}\\*{post_text[iter_pos + 1 :]}"
+            post_text = f"{post_text[:iter_pos]}*{post_text[iter_pos + 1 :]}"
             iter_pos += 2
 
         iter_pos = 0
@@ -2423,7 +2694,7 @@ def format_text_block(
             if iter_pos == -1:
                 break
             if not post_text[iter_pos + 1].isalnum():  # don't escape within a snake_case word
-                post_text = f"{post_text[:iter_pos]}\\_{post_text[iter_pos + 1 :]}"
+                post_text = f"{post_text[:iter_pos]}_{post_text[iter_pos + 1 :]}"
                 iter_pos += 2
             else:
                 iter_pos += 1
@@ -2530,8 +2801,9 @@ def format_table(f: TextIO, data: List[Tuple[Optional[str], ...]], remove_empty_
     if len(data) == 0:
         return
 
-    f.write(".. table::\n")
-    f.write("   :widths: auto\n\n")
+    # 【注释】Markdown 中没有
+    # f.write(".. table::\n")
+    # f.write("   :widths: auto\n\n")
 
     # Calculate the width of each column first, we will use this information
     # to properly format RST-style tables.
@@ -2550,11 +2822,17 @@ def format_table(f: TextIO, data: List[Tuple[Optional[str], ...]], remove_empty_
     for size in column_sizes:
         if size == 0 and remove_empty_columns:
             continue
-        sep += "+" + "-" * (size + 2)  # Content of each cell is padded by 1 on each side.
-    sep += "+\n"
+        # 【覆写】mdbook 仅支持 `|`
+        # sep += "+" + "-" * (size + 2)  # Content of each cell is padded by 1 on each side.
+        sep += "|" + "-" * (size + 2)
+    # 【覆写】mdbook 仅支持 `|`
+    # sep += "+\n"
+    sep += "|\n"
 
     # Draw the first separator.
-    f.write(f"   {sep}")
+    # 无需缩进 
+    # f.write(f"   {sep}")
+    f.write(f"{sep}")
 
     # Draw each row and close it with a separator.
     for row in data:
@@ -2565,8 +2843,11 @@ def format_table(f: TextIO, data: List[Tuple[Optional[str], ...]], remove_empty_
             row_text += f' {(text or "").ljust(column_sizes[i])} |'
         row_text += "\n"
 
-        f.write(f"   {row_text}")
-        f.write(f"   {sep}")
+        # 【覆写，两行】无需缩进
+        # f.write(f"   {row_text}")
+        # f.write(f"   {sep}")
+        f.write(f"{row_text}")
+        f.write(f"{sep}")
 
     f.write("\n")
 

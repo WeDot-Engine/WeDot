@@ -21,6 +21,11 @@ rst:
 	mkdir -p "$(OUTPUTDIR)/rst"
 	python3 "$(TOOLSDIR)/make_rst.py" -o "$(OUTPUTDIR)/rst" -l "$(LANGARG)" $(TOOLSOPT) $(CLASSES)
 
+md:
+	rm -rf "$(OUTPUTDIR)/md"
+	mkdir -p "$(OUTPUTDIR)/md"
+	python3 "$(TOOLSDIR)/make_md.py" -o "$(OUTPUTDIR)/md" -l "$(LANGARG)" $(TOOLSOPT) $(CLASSES)
+
 xml-check:
 	python3 "$(TOOLSDIR)/make_rst.py" --dry-run -l "$(LANGARG)" $(TOOLSOPT) $(CLASSES)
 
