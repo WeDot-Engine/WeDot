@@ -1,11 +1,6 @@
-<p align="center">
-    <img width="128" src="logo/wedot-icon_transparent.svg" alt="WeDot Engine Logo" />
-</p>
-<h1 align="center">WeDot Engine</h1>
-
-> 🌏 [简体中文](./README.md) | English
-
-WeDot is a fork of Godot. WeDot Engine is a multi-platform 2D and 3D game engine focused solely on technology and user experience. It is designed to be easy to use and to allow developers to focus on their games.
+<h1 align="center">
+  <a href="https://wedot.top"><img width="400" src="logo/wedot-logo2_text-transparent.svg" alt="WeDot Engine Logo" /></a>
+</h1>
 
 <p align="center">
     <a href="https://github.com/Wedot-Engine/WeDot"><img alt="Github repo" src="https://img.shields.io/website?url=https%3A%2F%2Fgithub.com%2FPJ-568%2Fqmole-source-site&up_color=007bff&up_message=Wedot-Engine/WeDot&logo=github&label=Github" loading="lazy"></a>
@@ -13,13 +8,20 @@ WeDot is a fork of Godot. WeDot Engine is a multi-platform 2D and 3D game engine
     <a href="https://gitee.com/Wedot-Engine/WeDot"><img alt="Gitee repo" src="https://img.shields.io/website?url=https%3A%2F%2Fgitee.com%2FPJ-568%2Fqmole-source-site&up_color=007bff&up_message=Wedot-Engine/WeDot&logo=gitee&label=Gitee" loading="lazy"></a>
 </p>
 
-## We Promise
+> 🌏 [简体中文](./README.md) | English
 
+WeDot is a multi platform 2D and 3D game engine that focuses on technology and user experience, allowing developers to focus on the game development itself rather than the intricate technical details.
+
+> ## We Promise
 > **No Political Elements**: WeDot is focused on pure game development. Make the game engine a GAME ENGINE.
 >
 > **Open Source and Transparency**: We adhere to the principles of open source. All development progress and decision-making processes will be transparent.
 >
 > **Community-Driven**: We value community feedback and contributions. We encourage developers to participate in the improvement and development of the engine.
+
+## Go live
+
+- [Explain-CN](https://docs.wedot.top/)
 
 ## Current Plan
 
@@ -29,6 +31,10 @@ WeDot is a fork of Godot. WeDot Engine is a multi-platform 2D and 3D game engine
 4. Optimize performance to improve engine efficiency across different platforms.
 5. Expand documentation to provide more detailed usage guides and technical support.
 
+## How to contribute
+
+- [CONTRIBUTING-CN](./CONTRIBUTING.md)
+ 
 ## Contact
 
 - [Website](https://wedot.top)
