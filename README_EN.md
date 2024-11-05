@@ -12,13 +12,16 @@
 
 WeDot is a fork of Godot. WeDot Engine is a multi-platform 2D and 3D game engine focused solely on technology and user experience. It is designed to be easy to use and to allow developers to focus on their games.
 
-## We Promise
-
+> ## We Promise
 > **No Political Elements**: WeDot is focused on pure game development. Make the game engine a GAME ENGINE.
 >
 > **Open Source and Transparency**: We adhere to the principles of open source. All development progress and decision-making processes will be transparent.
 >
 > **Community-Driven**: We value community feedback and contributions. We encourage developers to participate in the improvement and development of the engine.
+
+## Go live
+
+- [Explain-CN](https://docs.wedot.top/)
 
 ## Current Plan
 
