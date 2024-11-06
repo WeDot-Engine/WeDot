@@ -2835,9 +2835,12 @@ def format_table(f: TextIO, data: List[Tuple[Optional[str], ...]], remove_empty_
     sep += "|\n"
 
     # Draw the first separator.
-    # 无需缩进 
+    # 【覆写，两行】无需缩进 
     # f.write(f"   {sep}")
     # f.write(f"{sep}")
+
+    # 【新增】表格起始
+    f.write("|||\n|:-:|:--|\n")
 
     # Draw each row and close it with a separator.
     for row in data:
