@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# This script makes RST files from the XML class reference for use with the online docs.
+# This script makes markdown files from the XML class reference for use with the online docs.
 
 import argparse
 import os
