@@ -1,4 +1,4 @@
-5<h1 align="center">
+<h1 align="center">
   <a href="https://wedot.top"><img width="400" src="logo/wedot-logo2_text-transparent.svg" alt="WeDot Engine Logo" /></a>
 </h1>
 
@@ -10,7 +10,8 @@
 
 > 🌏 简体中文 | [English](./README_EN.md)
 
-WeDot 是 Godot 的一个分支。WeDot 引擎是一个多平台的 2D 和 3D 游戏引擎，专注于技术和用户体验。它设计得易于使用，使开发者能够专注于游戏本身。
+WeDot 是一个专注于技术和用户体验的多平台 2D 与 3D 游戏引擎。
+WeDot 专注于易用性，能让开发者把注意力集中在游戏开发本身，而非繁杂的技术细节上。
 
 > ## 我们承诺
 > **无政治元素**：WeDot 致力于纯粹的游戏开发。让游戏引擎回归游戏的本质。
