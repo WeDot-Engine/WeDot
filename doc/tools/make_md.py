@@ -1778,9 +1778,9 @@ def make_method_signature(
             ref_type_qualifier = ""
             if definition.name.startswith("_"):
                 ref_type_qualifier = "private_"
-            out += f"[`{definition.name}`](#class_{class_def.name.lower()}_{ref_type_qualifier.lower()}{ref_type.lower()}_{definition.name.lower()})"
+            out += f"[`{definition.name}`](class_{class_def.name.lower()}md#class_{class_def.name.lower()}_{ref_type_qualifier.lower()}{ref_type.lower()}_{definition.name.lower()})"
         else:
-            out += f"[`{definition.name}`](#class_{class_def.name.lower()}_{ref_type.lower()}_{definition.name.lower()})"
+            out += f"[`{definition.name}`](class_{class_def.name.lower()}.md#class_{class_def.name.lower()}_{ref_type.lower()}_{definition.name.lower()})"
     else:
         out += f"**{definition.name}**"
 
