@@ -1050,14 +1050,14 @@ def make_md_class(class_def: ClassDef, state: State, dry_run: bool, output_dir: 
                     ref = (
                         # 【覆写】引用链接
                         # f":ref:`{property_def.overrides}<class_{property_def.overrides}_property_{property_def.name}>`"
-                        f"[`{property_def.overrides}`](#class_{property_def.overrides.lower()}_property_{property_def.name.lower()})"
+                        f"[`{property_def.overrides}`](class_{property_def.overrides.lower()}.md#class_{property_def.overrides.lower()}_property_{property_def.name.lower()})"
                     )
                     # Not using translate() for now as it breaks table formatting.
                     ml.append((type_md, property_def.name, f"{default} (overrides {ref})"))
                 else:
                     # 【覆写】引用链接
                     # ref = f":ref:`{property_def.name}<class_{class_name}_property_{property_def.name}>`"
-                    ref = f"[`{property_def.name}`](#class_{class_name.lower()}_property_{property_def.name.lower()})"
+                    ref = f"[`{property_def.name}`](class_{class_name.lower()}.md#class_{class_name.lower()}_property_{property_def.name.lower()})"
                     ml.append((type_md, ref, default))
 
             format_table(f, ml, True)
@@ -1109,7 +1109,7 @@ def make_md_class(class_def: ClassDef, state: State, dry_run: bool, output_dir: 
             for theme_item_def in class_def.theme_items.values():
                 # 【覆写】引用链接
                 # ref = f":ref:`{theme_item_def.name}<class_{class_name}_theme_{theme_item_def.data_name}_{theme_item_def.name}>`"
-                ref = f"[`{theme_item_def.name}`](#class_{class_name.lower()}_theme_{theme_item_def.data_name.lower()}_{theme_item_def.name.lower()})"
+                ref = f"[`{theme_item_def.name}`](class_{class_name.lower()}.md#class_{class_name.lower()}_theme_{theme_item_def.data_name.lower()}_{theme_item_def.name.lower()})"
                 ml.append((theme_item_def.type_name.to_md(state), ref, theme_item_def.default_value))
 
             format_table(f, ml, True)
@@ -2532,7 +2532,7 @@ def format_text_block(
                             repl_text = f"{target_class_name}.{target_name}"
                         # 【覆写】引用链接
                         # tag_text = f":ref:`{repl_text}<class_{target_class_name}{ref_type}_{target_name}>`"
-                        tag_text = f"[`{repl_text}`](#class_{target_class_name.lower()}{ref_type.lower()}_{target_name.lower()})"
+                        tag_text = f"[`{repl_text}`](class_{target_class_name.lower()}.md#class_{target_class_name.lower()}{ref_type.lower()}_{target_name.lower()})"
                         escape_pre = True
                         escape_post = True
 
