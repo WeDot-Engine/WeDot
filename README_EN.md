@@ -19,7 +19,7 @@ WeDot is a multi platform 2D and 3D game engine that focuses on technology and u
 >
 > **Community-Driven**: We value community feedback and contributions. We encourage developers to participate in the improvement and development of the engine.
 
-## Go live
+## To start
 
 - [WeDot Documentation](https://docs.wedot.top/)
 
