@@ -1,5 +1,12 @@
 WeDot Engine Logo
+Author: Xiwoof
+Date: 2024.10.29
 Copyright (c) 2024 Xiwoof
 
-This work is licensed under the Creative Commons Attribution 4.0 International
-license (CC BY 4.0 International): https://creativecommons.org/licenses/by/4.0/
+This work is licensed under the Creative Commons Attribution 4.0 International (CC BY 4.0) License.
+Permissions:
+Share: You are free to copy and redistribute the logo in any medium or format.
+Adapt: You are free to remix, transform, and build upon the logo for any purpose, including commercial uses.
+Conditions:
+Attribution: You must provide appropriate credit, include a link to this license, and indicate if changes were made. This can be done in any reasonable manner, but it must not suggest that Xiwoof endorses you or your usage.
+For full terms, see: https://creativecommons.org/licenses/by/4.0/
