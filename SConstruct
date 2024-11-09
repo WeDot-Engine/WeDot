@@ -1037,45 +1037,6 @@ if env["ninja"]:
 if env["threads"]:
     env.Append(CPPDEFINES=["THREADS_ENABLED"])
 
-
-# 修复 Windows 上的命令行超长问题
-# The command line is too long.
-# 参考资料 https://github.com/SCons/scons/wiki/LongCmdLinesOnWin32
-if env["platform"] == 'windows':
-    import win32file
-    import win32event
-    import win32process
-    import win32security
-    def my_spawn(sh, escape, cmd, args, spawnenv):
- 
-        # for var in spawnenv:
-            # spawnenv[var] = spawnenv[var].encode('ascii', 'replace')
-
-        sAttrs = win32security.SECURITY_ATTRIBUTES()
-        StartupInfo = win32process.STARTUPINFO()
-
-        # newargs = ' '.join(map(escape, args[1:]))
-        # cmdline = cmd + " " + newargs
-        
-        cmdline = cmd + " " + ' '.join(args[1:])
-        # print("###### ",cmdline)
-
-        # check for any special operating system commands
-        if cmd == 'del':
-            for arg in args[1:]:
-                win32file.DeleteFile(arg)
-            exit_code = 0
-        else:
-            # otherwise execute the command.
-            hProcess, hThread, dwPid, dwTid = win32process.CreateProcess(None, cmdline, None, None, 1, 0, spawnenv, None, StartupInfo)
-            win32event.WaitForSingleObject(hProcess, win32event.INFINITE)
-            exit_code = win32process.GetExitCodeProcess(hProcess)
-            win32file.CloseHandle(hProcess);
-            win32file.CloseHandle(hThread);
-        return exit_code
-
-    env['SPAWN'] = my_spawn
-
 # Build subdirs, the build order is dependent on link order.
 Export("env")
 
