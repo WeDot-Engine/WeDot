@@ -1,0 +1,58 @@
+name: 工作链
+on: [push, pull_request, merge_group, workflow_dispatch]
+
+concurrency:
+  group: ci-${{ github.actor }}-${{ github.head_ref || github.run_number }}-${{ github.ref }}-runner
+  cancel-in-progress: true
+
+jobs:
+  # 第一阶段：语法检查
+
+  # static-checks:
+  #   if: '!vars.DISABLE_GODOT_CI'
+  #   name: 静态语法检查
+  #   uses: ./.github/workflows/static_checks.yml
+
+  # 第二阶段：构建和测试
+
+  android-build:
+    name: 安卓
+    # needs: static-checks
+    uses: ./.github/workflows/android_builds.yml
+
+  ios-build:
+    name: iOS
+    # needs: static-checks
+    uses: ./.github/workflows/ios_builds.yml
+
+  linux-build:
+    name: Linux
+    # needs: static-checks
+    uses: ./.github/workflows/linux_builds.yml
+
+  macos-build:
+    name: macOS
+    # needs: static-checks
+    uses: ./.github/workflows/macos_builds.yml
+
+  windows-build:
+    name: Windows
+    # needs: static-checks
+    uses: ./.github/workflows/windows_builds.yml
+
+  web-build:
+    name: 网页
+    # needs: static-checks
+    uses: ./.github/workflows/web_builds.yml
+
+  # 第三阶段：用先前工作流的构建结果运行辅助测试。
+
+  # 对于故意破坏与 godot-cpp 兼容的 PR，可以关闭，
+  # 直到上游 PR 和匹配的 godot-cpp 更改都被合并。
+  # godot-cpp-test:
+  #   name: 🪲 Godot CPP
+  #   # This can be changed to depend on another platform, if we decide to use it for
+  #   # godot-cpp instead. Make sure to move the .github/actions/godot-api-dump step
+  #   # appropriately.
+  #   needs: linux-build
+  #   uses: ./.github/workflows/godot_cpp_test.yml
