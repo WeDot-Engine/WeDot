@@ -1,0 +1,126 @@
+name: Windows 编译 
+on:
+  workflow_call:
+
+# 全局设置
+# 必须在构建环境中设置 Windows SCONS_CACHE
+env:
+  # Cache key 要用。添加版本后缀以强制进行干净构建。
+  GODOT_BASE_BRANCH: main
+  SCONSFLAGS: verbose=yes warnings=extra werror=yes module_text_server_fb_enabled=yes d3d12=yes strict_checks=yes "angle_libs=${{ github.workspace }}/"
+  SCONS_CACHE_MSVC_CONFIG: true
+
+concurrency:
+  group: ci-${{ github.actor }}-${{ github.head_ref || github.run_number }}-${{ github.ref }}-windows
+  cancel-in-progress: true
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    name: ${{ matrix.name }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Editor (target=editor, tests=yes)
+            cache-name: windows-editor
+            target: editor
+            tests: true
+            # Skip debug symbols, they're way too big with MSVC.
+            sconsflags: debug_symbols=no vsproj=yes vsproj_gen_only=no windows_subsystem=console
+            bin: ./bin/godot.windows.editor.x86_64.exe
+            compiler: msvc
+
+          - name: Editor w/ clang-cl (target=editor, tests=yes, use_llvm=yes)
+            cache-name: windows-editor-clang
+            target: editor
+            tests: true
+            sconsflags: debug_symbols=no windows_subsystem=console use_llvm=yes
+            bin: ./bin/godot.windows.editor.x86_64.llvm.exe
+            compiler: clang
+
+          - name: Template (target=template_release, tests=yes)
+            cache-name: windows-template
+            target: template_release
+            tests: true
+            sconsflags: debug_symbols=no
+            bin: ./bin/godot.windows.template_release.x86_64.console.exe
+            compiler: msvc
+
+          - name: Template w/ GCC (target=template_release, tests=yes, use_mingw=yes)
+            cache-name: windows-template-gcc
+            # MinGW 的编译过程需要更长的时间；通过仅针对 Template 目标，可以节省时间。
+            target: template_release
+            tests: true
+            sconsflags: debug_symbols=no use_mingw=yes
+            bin: ./bin/godot.windows.template_release.x86_64.console.exe
+            compiler: gcc
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Restore Godot build cache
+        uses: ./.github/actions/godot-cache-restore
+        with:
+          cache-name: ${{ matrix.cache-name }}
+        continue-on-error: true
+
+      - name: Setup Python and SCons
+        uses: ./.github/actions/godot-deps
+
+      - name: Download Direct3D 12 SDK components
+        run: python ./misc/scripts/install_d3d12_sdk_windows.py
+
+      - name: Download pre-built ANGLE static libraries
+        uses: dsaltares/fetch-gh-release-asset@1.1.2
+        with:
+          repo: godotengine/godot-angle-static
+          version: tags/chromium/6601.2
+          file: godot-angle-static-x86_64-${{ matrix.compiler == 'gcc' && 'gcc' || 'msvc' }}-release.zip
+          target: angle/angle.zip
+
+      - name: Extract pre-built ANGLE static libraries
+        run: Expand-Archive -Force angle/angle.zip ${{ github.workspace }}/
+
+      - name: Setup MSVC problem matcher
+        if: matrix.compiler == 'msvc'
+        uses: ammaraskar/msvc-problem-matcher@master
+
+      - name: Setup GCC problem matcher
+        if: matrix.compiler != 'msvc'
+        uses: ammaraskar/gcc-problem-matcher@master
+
+      - name: Compilation
+        uses: ./.github/actions/godot-build
+        with:
+          sconsflags: ${{ env.SCONSFLAGS }} ${{ matrix.sconsflags }}
+          platform: windows
+          target: ${{ matrix.target }}
+          tests: ${{ matrix.tests }}
+
+      - name: Save Godot build cache
+        uses: ./.github/actions/godot-cache-save
+        with:
+          cache-name: ${{ matrix.cache-name }}
+        continue-on-error: true
+
+      - name: Prepare artifact
+        if: matrix.compiler == 'msvc'
+        run: |
+          Remove-Item bin/* -Include *.exp,*.lib,*.pdb -Force
+
+      - name: Upload artifact
+        if: matrix.compiler == 'msvc'
+        uses: ./.github/actions/upload-artifact
+        with:
+          name: ${{ matrix.cache-name }}
+
+      - name: Unit tests
+        if: matrix.tests
+        run: |
+          ${{ matrix.bin }} --version
+          ${{ matrix.bin }} --help
+          ${{ matrix.bin }} --test --force-colors
