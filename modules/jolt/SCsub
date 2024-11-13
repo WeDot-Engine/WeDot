@@ -1,0 +1,66 @@
+# SCsub
+
+Import("env")
+Import("env_modules")
+
+env_jolt = env_modules.Clone()  # 为jolt模块克隆一个环境
+
+module_obj = []  # 模块源文件构建出来的对象文件列表
+module_dir = "#modules/jolt/"  # 模块源文件的路径
+module_sources = [
+    "*.cpp",
+    "joints/*.cpp",
+    "misc/*.cpp",
+    "objects/*.cpp",
+    "servers/*.cpp",
+    "shapes/*.cpp",
+    "spaces/*.cpp",
+    "containers/*.cpp",
+]
+
+thirdparty_obj = []  # 第三方源文件构建出来的对象文件列表
+thirdparty_dir = "#thirdparty/libjolt/"  # 第三方源文件的路径
+thirdparty_sources = [
+    "Jolt/*.cpp",
+    "Jolt/AABBTree/*.cpp",
+    "Jolt/AABBTree/NodeCodec/*.cpp",
+    "Jolt/AABBTree/TriangleCodec/*.cpp",
+    "Jolt/Core/*.cpp",
+    "Jolt/Geometry/*.cpp",
+    "Jolt/Math/*.cpp",
+    "Jolt/ObjectStream/*.cpp",
+    "Jolt/Physics/*.cpp",
+    "Jolt/Physics/Body/*.cpp",
+    "Jolt/Physics/Character/*.cpp",
+    "Jolt/Physics/Collision/*.cpp",
+    "Jolt/Physics/Collision/BroadPhase/*.cpp",
+    "Jolt/Physics/Collision/Shape/*.cpp",
+    "Jolt/Physics/Constraints/*.cpp",
+    "Jolt/Physics/Constraints/ConstraintPart/*.cpp",
+    "Jolt/Physics/Ragdoll/*.cpp",
+    "Jolt/Physics/SoftBody/*.cpp",
+    "Jolt/Physics/Vehicle/*.cpp",
+    "Jolt/Renderer/*.cpp",
+    "Jolt/Skeleton/*.cpp",
+    "Jolt/TriangleGrouper/*.cpp",
+    "Jolt/TriangleSplitter/*.cpp",
+]
+
+env_jolt.Prepend(CPPPATH=[thirdparty_dir])  # 将第三方源文件的路径添加该模块的环境当中，这样我们就能在该模块内使用第三方库
+
+env_thirdparty = env_jolt.Clone()  # 为第三方库克隆一个环境
+env_thirdparty.disable_warnings()  # 禁用警告
+for pattern in thirdparty_sources:
+    env_thirdparty.add_source_files(thirdparty_obj,
+                                    thirdparty_dir + pattern)  # 将第三方源文件添加到构建中并将构建出来的对象文件保存到 thirdparty_obj 中
+env.modules_sources += thirdparty_obj  # 将第三方源文件的对象文件链接到模块源
+
+# env_jolt.Prepend(CPPFLAGS=['-include', 'modules/jolt/precompiled.hpp'])  # 添加预编译头文件
+env_jolt.Prepend(CPPPATH=[module_dir])
+if env.editor_build:
+    env_jolt.Append(CPPDEFINES=['GDJ_CONFIG_EDITOR'])
+for pattern in module_sources:
+    env_jolt.add_source_files(module_obj, pattern)
+
+env.modules_sources += module_obj  # 将模块源文件的构建结果链接到模块源
+env.Depends(module_obj, thirdparty_obj)  # 当第三方库更新时，强制重新构建模块文
